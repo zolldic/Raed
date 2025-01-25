@@ -50,16 +50,21 @@ async def user_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
         return CHOOSE_TASK
     elif user_type == "Organization":
+        html_text: str = define_language(
+            'organization', context.user_data['language_code']
+        )
         await update.message.reply_text(
-            """Please upload your organization's profile in PDF, DOCX or DOC format.""",
+            html_text,
             parse_mode='HTML'
         )
         logger.info(
             f"User selected {user_type}. Proceeding to UPLOAD_PROFILE.")
         return UPLOAD_PROFILE
     else:
+        html_text: str = define_language(
+            'error_user_type', context.user_data['language_code'])
         await update.message.reply_text(
-            "Please select a valid option: Activist or Organization.",
+            html_text,
             parse_mode='HTML')
         logger.warning(f"Invalid choice entered by user: '{user_type}'")
         return CHOICE
