@@ -8,7 +8,7 @@ from telegram import (
     User
 )
 from telegram.ext import ContextTypes
-from .. import CHOICE
+from .. import SET_LANGUAGE
 from ..utils.utilties import define_language
 
 
@@ -34,7 +34,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['id'] = user.id
     context.user_data['full_name'] = user.full_name
     context.user_data['username'] = user.username
-    context.user_data['language_code'] = user.language_code
 
     html_text: str = define_language('start', user.language_code)
     await update.message.reply_text(
@@ -51,4 +50,4 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         )
     )
 
-    return CHOICE
+    return SET_LANGUAGE
