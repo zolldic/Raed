@@ -16,13 +16,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Starts the conversation and determines the user's type (activist or organization).
 
     This function initiates the conversation with the user, determines if the user
-    identifies as an activist or an organization, and saves user information such as 
+    identifies as an activist or an organization, and saves user information such as
     username, language code, and chat ID to the database.
 
     Args:
         update (telegram.Update): The update object that contains information about
             the incoming message and its metadata.
-        context (telegram.ext.ContextTypes.DEFAULT_TYPE): The context object that 
+        context (telegram.ext.ContextTypes.DEFAULT_TYPE): The context object that
             contains user-specific data for the conversation.
 
     Returns:
@@ -41,13 +41,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         html_text,
         parse_mode='HTML',
         reply_markup=ReplyKeyboardMarkup(
-            [
-                [
-                   'Activist',
-                   'Org'
-                ]
-            ],
+
+            [[
+                'English',
+                'Arabic'
+            ]],
             one_time_keyboard=True,
-            resize_keyboard=True)
+            resize_keyboard=True
+        )
     )
+
     return CHOICE
