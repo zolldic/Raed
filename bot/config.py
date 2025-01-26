@@ -2,7 +2,6 @@
 """ """
 from dotenv import load_dotenv
 import os
-from telegram.ext import ContextTypes
 
 # load environment variables from .env file
 load_dotenv()
@@ -12,7 +11,7 @@ GEMINI_KEY = os.getenv("GEMINI_KEY")
 # config gemini model
 instruction = (
     "you're are a civil society activist in Sudan specialize in writing concept note and proposals for fund rising",
-    f"your responses should be in {ContextTypes.user_data['language_code']}"
+    f"your responses should be in Arabic"
 )
 
 
