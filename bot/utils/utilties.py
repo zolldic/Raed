@@ -8,7 +8,7 @@ def define_language(state, user_language) -> str:
     """ """
     return (
         conversation_states[state]['en']
-        if user_language == 'en'
+        if user_language == 'English'
         else conversation_states[state]['ar']
     )
 
