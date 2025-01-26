@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+"""This module handles the user's choice of role (Activist or Organization) in a Telegram bot conversation.
+
+Functions:
+    user_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+        Handles the user's choice of role and prompts them for the next action.
+"""
+
+
 import logging
 
 from telegram import (
