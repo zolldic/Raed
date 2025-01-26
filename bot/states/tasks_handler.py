@@ -35,7 +35,7 @@ async def choose_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     if task == "Analyze a problem":
         html_text: str = define_language(
-            'analyze_problem', context.user_data['langauge_code'])
+            'analyze_problem', context.user_data['language_code'])
         await update.message.reply_text(
             html_text,
             parse_mode='HTML'
@@ -47,7 +47,7 @@ async def choose_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
     elif task == "Create a concept note":
         html_text = define_language(
-            'concept_note', context.user_data['langauge_code'])
+            'concept_note', context.user_data['language_code'])
         await update.message.reply_text(
             html_text,
             parse_mode='HTML'
@@ -57,7 +57,7 @@ async def choose_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
         return CREATE_NOTE
     elif task == "Write a full proposal":
         html_text: str = define_language(
-            'full_proposal', context.user_data['langauge_code'])
+            'full_proposal', context.user_data['language_code'])
         await update.message.reply_text(
             html_text,
             parse_mode='HTML'
