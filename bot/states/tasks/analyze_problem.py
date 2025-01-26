@@ -16,7 +16,7 @@ async def analyze_problem_task(update: Update, context: ContextTypes.DEFAULT_TYP
         """,
         parse_mode='HTML'
     )
-    html_text = define_language('end', context.user_data['langauge_code'])
+    html_text = define_language('end', context.user_data['language_code'])
     await update.message.reply_text(
         html_text,
         parse_mode='HTML'
