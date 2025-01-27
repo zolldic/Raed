@@ -2,48 +2,67 @@
 """This module provides utility functions for language definition and text extraction from PDF files.
 
 Functions:
-    define_language(state, user_language) -> str:
-        Defines the language based on the user's language preference and conversation state.
+    define_lang(texts, user_language) -> str:
+        Defines the language based on the user's language preference.
 
-    extract_text(path) -> str:
-        Extracts and returns text content from a PDF file located at the given path.
+    extract_text_from_file(buf, file_name) -> str:
+        Extracts and returns text content from a PDF, DOCX and DOC file.
+    
+    verify_file_format(file_name) -> bool:
+        Verifies the format of the uploaded file.
 """
-from ..config import conversation_states
-import pypdf
+
+from pypdf import PdfReader
+from docx import Document
+import textract
 
 
-def define_language(state, user_language) -> str:
+def define_lang(texts: dict, lang) -> str:
+    """Defines the language based on the user's language preference
+    Returns:
+        str: the text in the user's lanaguage preference
     """
-    Defines the language based on the user's language preference and conversation state.
+    try:
+        return texts[lang]
+    except KeyError:
+        return None
+
+
+def extract_text_from_file(buf: bytearray, file_name: str) -> str:
+    """Extracts and returns text content from a PDF, DOCX and DOC file.
 
     Args:
-        state (str): The current state of the conversation.
-        user_language (str): The language preference of the user ('en' for English, 'ar' for Arabic).
+        buf (bytearray): buffer represent the file content as bytes
+        file_name (str): the name of the file
 
     Returns:
-        str: The language-specific conversation state.
+        str: the content of the file
     """
-    return (
-        conversation_states[state]['en']
-        if user_language == 'en'
-        else conversation_states[state]['ar']
-    )
+
+    ext = file_name.split('.')[1]
+    match ext.lower():
+        case 'pdf':
+            reader = PdfReader(buf)
+            return ''.join(
+                [page.extract_text() or "" for page in reader.pages]
+            )
+        case 'docx':
+            document = Document(buf)
+            return ''.join(
+                [paragraph.text for paragraph in document.paragraphs]
+            )
+        case 'doc':
+            return textract.process(buf, extension='doc').decode('utf-8')
 
 
-def extract_text(path):
+def verify_file_format(file_name: str) -> bool:
+    """Verifies the format of the uploaded file.
+
+        Args:
+            file_name (str): The name of the uploaded file.
+
+        Returns:
+            bool: True if the file format is valid, False otherwise.
     """
-    Extracts and returns text content from a PDF file located at the given path.
-
-    Args:
-        path (str): The file path to the PDF document.
-
-    Returns:
-        str: The extracted text content from the PDF.
-    """
-    text = ""
-    with open(path, "rb") as f:
-        reader = pypdf.PdfReader(f)
-
-        for page in reader.pages:
-            text += page.extract_text()
-    return text
+    allowed_ext: set[str] = {'pdf', 'docx', 'doc'}
+    return any(file_name.endswith(ext) for ext in allowed_ext)

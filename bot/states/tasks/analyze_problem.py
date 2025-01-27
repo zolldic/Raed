@@ -9,13 +9,16 @@ Functions:
 
 
 from telegram import Update
-from telegram.ext import ContextTypes, ConversationHandler
-
+from telegram.ext import ContextTypes
+from ... import CHOOSE_TASK
 from ...utils.gemini import analyze_problem
-from ...utils.utilties import define_language
+from logging import getLogger
 
 
-async def analyze_problem_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+logger = getLogger(__name__)
+
+
+async def analyze_problem_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Handles the analysis of a problem provided by the user through a Telegram message.
 
@@ -24,21 +27,17 @@ async def analyze_problem_task(update: Update, context: ContextTypes.DEFAULT_TYP
         context (telegram.ext.ContextTypes.DEFAULT_TYPE): The context object that contains user data and other information.
 
     Returns:
-        None
+        int: return to CHOOSE_TASK conversation state
     """
 
-    input = update.message.text
-    context.user_data["problem"] = input
-    response = analyze_problem(input)
+    text: str = update.message.text
+    context.user_data["problem"] = text
+    response: str = analyze_problem(text)
+
     await update.message.reply_text(
-        f"""<b>Problem Analysis</b>
-        {response}
-        """,
+        response,
         parse_mode='HTML'
     )
-    html_text = define_language('end', context.user_data['language_code'])
-    await update.message.reply_text(
-        html_text,
-        parse_mode='HTML'
-    )
-    return ConversationHandler.END
+    logger.info(
+        f"Problem analyzed for user {update.effective_user.name}: {text}")
+    return CHOOSE_TASK
