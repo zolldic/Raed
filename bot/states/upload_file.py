@@ -98,7 +98,7 @@ async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
             ),
         )
         logger.info(
-            f"Profile uploaded successfully by user. File saved at: {file_path}. Proceeding to CHOOSE_TASK state."
+            f"Profile uploaded successfully by user. Proceeding to CHOOSE_TASK state."
         )
         return CHOOSE_TASK
     except Exception as e:
