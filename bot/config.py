@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
-""" """
+"""
+This module loads environment variables and configures the Gemini model.
+
+Functions:
+    load_dotenv: Loads environment variables from a .env file.
+    os.getenv: Retrieves environment variables.
+
+Environment Variables:
+    BOT_KEY: API key for the bot.
+    GEMINI_KEY: API key for the Gemini model.
+
+Configuration:
+    instruction: Tuple containing instructions for the Gemini model.
+        - The first element specifies the role of the model as a civil society activist in Sudan specializing in writing concept notes and proposals for fundraising.
+        - The second element specifies that responses should be in Arabic.
+"""
+
 from dotenv import load_dotenv
 import os
 
