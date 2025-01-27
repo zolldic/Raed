@@ -79,7 +79,7 @@ async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         context.user_data["Org_profile"] = pdf_text
 
         text = define_lang(
-            'success', context.user_data['language_code']
+            conversation['success'], context.user_data['language_code']
         )
 
         await update.message.reply_text(
