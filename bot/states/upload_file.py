@@ -2,18 +2,24 @@
 """Module for handling profile uploads
     in the Telegram bot.
 """
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import (
+    Update,
+    Document,
+    ReplyKeyboardMarkup)
 from telegram.ext import ContextTypes
-import os
+from io import BytesIO
 import logging
+from ..utils.utilties import (
+    define_lang,
+    verify_file_format,
+    extract_text_from_file)
 
 from .. import UPLOAD_PROFILE, CHOOSE_TASK
-from ..utils.utilties import define_language, extract_text
 
 logger = logging.getLogger(__name__)
 
 
-async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the upload of an organization's
         profile document and validates its format.
 
@@ -25,52 +31,59 @@ async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
             int: The next conversation state (CHOOSE_TASK or UPLOAD_PROFILE).
     """
 
-    allowed_ext = {'pdf'}
-    file = update.message.document
+    conversation: dict[str] = {
+        'success': {
+            'en': "Profile uploaded successfully! Now, choose what you'd like to do:",
 
-    if not file:
-        html_text: str = define_language(
-            'error_valid_document', context.user_data['language_code']
+            'ar': "تم تحميل الملف الشخصي بنجاح! الآن، اختر ما تريد القيام به:"
+        },
+        'error': {
+            'en': "Please upload a valid profile document. Accepted file types are PDF, DOCX or DOC.",
+            'ar': "يرجى تحميل ملف تعريف صالح. أنواع الملفات المقبولة هي PDF, DOCX or DOC."
+        }}
+
+    text: str = ''
+
+    if not update.message.document:
+        text = define_lang(
+            conversation['error'], context.user_data['language_code']
         )
         await update.message.reply_text(
-            html_text,
+            text,
             parse_mode='HTML')
         logger.warning(
             "No document uploaded by the user. Returning to UPLOAD_PROFILE state.")
         return UPLOAD_PROFILE
 
-    file_name = file.file_name
-    if not any(file_name.endswith(ext) for ext in allowed_ext):
-        html_text: str = define_language(
-            'error_valid_document', context.user_data['language_code']
+    document: Document = update.message.document
+    # check if document is bigger then 15MB ?
+
+    if not verify_file_format(document.file_name):
+        text = define_lang(
+            conversation['error'], context.user_data['language_code']
         )
         await update.message.reply_text(
-            html_text,
+            text,
             parse_mode='HTML'
         )
         logger.warning(
-            f"Invalid file format uploaded by user: {file_name}. Expected formats: {', '.join(allowed_ext)}.")
+            f"Invalid file format uploaded by user: {document.file_name}.")
         return UPLOAD_PROFILE
-
     try:
-        directory = "org_profiles"
+        file = await context.bot.get_file(document.file_id)
+        file_byte = await file.download_as_bytearray()
+        buffer = BytesIO(file_byte)
 
-        if not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
-            logger.info(f"Created directory for profile uploads: {directory}")
+        pdf_text = extract_text_from_file(buffer, document.file_name)
 
-        file_info = await context.bot.get_file(file.file_id)
-        file_path = os.path.join(directory, file_name)
+        context.user_data["Org_profile"] = pdf_text
 
-        await file_info.download_to_drive(file_path)
-        context.user_data["org_profile"] = file_path
-        context.user_data["profile"] = extract_text(file_path)
-
-        html_text: str = define_language(
-            'upload_success', context.user_data['language_code']
+        text = define_lang(
+            'success', context.user_data['language_code']
         )
+
         await update.message.reply_text(
-            html_text,
+            text,
             parse_mode='HTML',
             reply_markup=ReplyKeyboardMarkup(
                 [
@@ -90,11 +103,11 @@ async def prfile_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         return CHOOSE_TASK
     except Exception as e:
         logging.error(f"File upload error: {e}\n return to UPLOAD PROFILE")
-        html_text: str = define_language(
-            'error_valid_document', context.user_data['language_code']
+        text = define_lang(
+            conversation['error'], context.user_data['language_code']
         )
         await update.message.reply_text(
-            html_text,
+            text,
             parse_mode='HTML'
         )
         return UPLOAD_PROFILE
