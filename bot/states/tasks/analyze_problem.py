@@ -10,10 +10,9 @@ Functions:
 
 from telegram import Update
 from telegram.ext import ContextTypes
-from ... import CHOOSE_TASK
-from ...utils.gemini import analyze_problem
 from logging import getLogger
-
+from ... import CHOOSE_TASK
+from ...gemini.analysis import analysis_model
 
 logger = getLogger(__name__)
 
@@ -32,7 +31,7 @@ async def analyze_problem_task(update: Update, context: ContextTypes.DEFAULT_TYP
 
     text: str = update.message.text
     context.user_data["problem"] = text
-    response: str = analyze_problem(text)
+    response: str = analysis_model.problem_tree_analysis(text)
 
     await update.message.reply_text(
         response,
