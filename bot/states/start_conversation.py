@@ -11,10 +11,10 @@ from telegram import (
     User
 )
 from telegram.ext import ContextTypes
-from .. import SET_LANGUAGE
-from ..utils.utilties import define_lang
-
 from logging import getLogger
+
+from .. import USER_CHOICE_HANDLER
+from ..utils.utilties import define_lang
 
 logger = getLogger(__name__)
 
@@ -79,4 +79,4 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
     logger.info(f"User {user.id} ({user.full_name}) started the conversation.")
-    return SET_LANGUAGE
+    return USER_CHOICE_HANDLER
