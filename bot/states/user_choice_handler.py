@@ -43,14 +43,13 @@ async def user_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
         logger.info("Invalid language preference entered.")
         return USER_CHOICE_HANDLER
 
-    logger.info(
-        f"User selected language: {context.user_data['language_code']}")
-
     if update.message.text == 'English':
         context.user_data['language_code'] = 'en'
     else:
         context.user_data['language_code'] = 'ar'
 
+    logger.info(
+        f"User selected language: {context.user_data['language_code']}")
     conversation: dict[str] = {
         'en': ''.join([
             '<b>Please choose what you want to do next:</b>\n\n'
