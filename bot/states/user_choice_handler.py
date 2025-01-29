@@ -82,5 +82,5 @@ async def user_choice(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
             resize_keyboard=True
         ),
     )
-
+    logger.info("Prompted user for next action based on language selection.")
     return CONVERSATION_HANDLER
