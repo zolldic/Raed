@@ -14,8 +14,8 @@ from telegram.ext import ContextTypes
 from logging import getLogger
 
 from ...gemini.analysis import analysis_model
-from ... import FLOW_HANDLER
 from ...utils.utilties import define_lang
+from ... import FLOW_HANDLER
 
 logger = getLogger(__name__)
 
@@ -33,13 +33,10 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         int: The next state in the conversation flow.
     """
 
-    context.user_data['problem'] = update.message.text
     response: str = analysis_model.problem_tree_analysis(
-        context.user_data['problem'])
+        update.message.text)
 
     context.user_data['tree_analysis'] = response
-    # write a docx file and send it to user
-
     conversation: dict[str, str] = {
         'en': ''.join([
             '<b>Based on the analysis provided:</b>\n\n',
@@ -55,13 +52,19 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         ])
     }
+    # send the user the analysis
+    # create a docx file
+    await update.message.reply_text(response, parse_mode='HTML')
+
     await update.message.reply_text(
         define_lang(conversation, context.user_data['language_code']),
         parse_mode='HTML',
-        reply_markup=ReplyKeyboardMarkup([
-            ['Generate Concept Note',
-             'Generate Full Proposal',
-             'End Conversation']
-        ])
+        reply_markup=ReplyKeyboardMarkup(
+            [
+                ['Generate Concept Note',
+                 'Generate Full Proposal',
+                 'End Conversation'
+                 ]
+            ], resize_keyboard=True, one_time_keyboard=True)
     )
     return FLOW_HANDLER
