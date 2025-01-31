@@ -17,7 +17,7 @@ from docx import Document
 import textract
 
 
-def define_lang(texts: dict, lang) -> str:
+def define_lang(texts: dict, lang: str) -> str:
     """Defines the language based on the user's language preference
     Returns:
         str: the text in the user's lanaguage preference

@@ -21,66 +21,61 @@ from telegram.ext import (
 )
 
 from .config import BOT_KEY
-from . import SET_LANGUAGE, CHOICE, UPLOAD_PROFILE, CHOOSE_TASK, ANALYZE_PROBLEM, CREATE_NOTE, WRITE_PROPOSAL
+from . import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
+               ANALYSIS_TOOLS, PROBLEM_TREE_ANALYSIS,
+               SWOT_ANALYSIS, PESTEL_ANALYSIS,
+               CONCEPT_NOTE, FULL_PROPOSAL,
+               FLOW_HANDLER)
 
 from .states.start_conversation import start
-from .states.language_preference import set_language
-from .states.user_type import user_choice
-from .states.upload_file import prfile_upload
-from .states.tasks_handler import choose_task
-from .states.fallbacks import cancel
+from .states.user_choice_handler import user_choice
+from .states.tasks_handler import tasks
+from .states.complex_flow_handler import flow_handler
 
-from .states.tasks.analyze_problem import analyze_problem_task
-from .states.tasks.concept_note import create_note_task
-from .states.tasks.full_proposal import write_proposal_task
+# analysis tools
+from .states.analysis_tools import choose_analysis_method
+from .states.tasks.problem_tree_analysis import problem_tree_method
+from .states.tasks.swot_analysis import swot_analysis_method
+from .states.tasks.pestel_analysis import pestel_analysis_method
+
+# fallback
+from .states.fallbacks import cancel
 
 
 def main():
-    """Initializes and runs the Telegram bot application.
-        Steps:
-            1. Build the bot application using the ApplicationBuilder
-                with the bot token.
-            2. Define a ConversationHandler to manage
-                the bot's conversation flow:
-                - Entry point: /start command.
-                - States:
-                - CHOICE: Captures the user's role or task choice.
-                    - Fallback: /cancel command to exit the conversation.
-            3. Add the conversation handler to the bot's application.
-            4. Start polling for updates and handle user messages
-                in real-time.
+    """
     """
 
     application = ApplicationBuilder().token(BOT_KEY).build()
     conversation = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            SET_LANGUAGE: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND), set_language
+            USER_CHOICE_HANDLER: [MessageHandler(
+                filters.TEXT & (~filters.COMMAND), user_choice
             )],
-            CHOICE: [MessageHandler(
+            CONVERSATION_HANDLER: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
-                user_choice
+                tasks
             )],
-            UPLOAD_PROFILE: [MessageHandler(
-                filters.Document.ALL,
-                prfile_upload
-            )],
-            CHOOSE_TASK: [MessageHandler(
+            ANALYSIS_TOOLS: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
-                choose_task
+                choose_analysis_method
             )],
-            ANALYZE_PROBLEM: [MessageHandler(
+            PROBLEM_TREE_ANALYSIS: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
-                analyze_problem_task
+                problem_tree_method
             )],
-            CREATE_NOTE: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
-                create_note_task
+            SWOT_ANALYSIS: [MessageHandler(
+                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                swot_analysis_method
             )],
-            WRITE_PROPOSAL: [MessageHandler(
+            PESTEL_ANALYSIS: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
-                write_proposal_task
+                pestel_analysis_method
+            )],
+            FLOW_HANDLER: [MessageHandler(
+                filters.TEXT & (~filters.COMMAND),
+                flow_handler
             )],
         },
         fallbacks=[CommandHandler('cancel', cancel)]
