@@ -54,30 +54,42 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
         },
         'swot_analysis': {
             'en': ''.join([
-                '<b>SWOT Analysis 🔍</b>\n\n',
+                '<b>SWOT Analysis for Civil Society Organizations & Activists ✊🔍</b>\n\n',
                 'This tool helps assess the <u>Strengths</u>, <u>Weaknesses</u>, <u>Opportunities</u>, ',
-                'and <u>Threats</u> related to a project, organization, or situation. Ideal for strategic planning and decision-making.\n\n',
-                '<i>Please specify the subject of your SWOT analysis. For example: "A new product launch in the tech industry."</i>'
+                'and <u>Threats</u> affecting your organization, campaign, or initiative. It is essential ',
+                'for strategic planning, advocacy efforts, and sustainability.\n\n',
+                '<i>Please describe the focus of your SWOT analysis. For example: "A grassroots campaign for climate justice" or "A human rights NGO working in conflict zones."</i>'
             ]),
             'ar': ''.join([
-                '<b>تحليل سوات (SWOT) 🔍</b>\n\n',
-                'يساعد هذا الأداة في تقييم <u>نقاط القوة</u> و<u>نقاط الضعف</u> و<u>الفرص</u> ',
-                'و<u>التهديدات</u> المتعلقة بمشروع أو منظمة أو موقف معين. مثالي للتخطيط الاستراتيجي واتخاذ القرارات.\n\n',
-                '<i>يرجى تحديد موضوع تحليل سوات الخاص بك. على سبيل المثال: "إطلاق منتج جديد في صناعة التكنولوجيا".</i>'
+                '<b>تحليل سوات (SWOT) لمنظمات المجتمع المدني والنشطاء ✊🔍</b>\n\n',
+                'تساعد هذه الأداة في تقييم <u>نقاط القوة</u> و<u>نقاط الضعف</u> و<u>الفرص</u> ',
+                'و<u>التهديدات</u> التي تؤثر على منظمتك أو حملتك أو مبادرتك. أداة أساسية ',
+                'للتخطيط الاستراتيجي، وجهود المناصرة، وضمان الاستدامة.\n\n',
+                '<i>يرجى تحديد مجال تحليل سوات الخاص بك. على سبيل المثال: "حملة شعبية للعدالة المناخية" أو "منظمة حقوقية تعمل في مناطق النزاع".</i>'
             ])
         },
         'pestel_analysis': {
             'en': ''.join([
-                '<b>PESTEL Analysis 🌍</b>\n\n',
-                'This framework evaluates the external <u>Political</u>, <u>Economic</u>, <u>Social</u>, <u>Technological</u>, ',
-                '<u>Environmental</u>, and <u>Legal</u> factors affecting a business or initiative. Essential for understanding macro-level influences.\n\n',
-                '<i>Please specify the industry or business environment you want to analyze. For example: "The renewable energy sector."</i>'
+                '<b>PESTEL Analysis for Civil Society Organizations & Activists 🌍⚖️</b>\n\n',
+                'This framework evaluates external factors influencing your work, including:\n',
+                '- <u>Political</u>: Government policies, freedom of expression, civic space.\n',
+                '- <u>Economic</u>: Funding availability, donor priorities, financial sustainability.\n',
+                '- <u>Social</u>: Public awareness, community support, social movements.\n',
+                '- <u>Technological</u>: Digital security, online activism, access to tools.\n',
+                '- <u>Environmental</u>: Climate challenges, sustainability concerns, green initiatives.\n',
+                '- <u>Legal</u>: Laws on NGOs, human rights frameworks, regulatory barriers.\n\n',
+                '<i>Please specify the issue or context for your PESTEL analysis. For example: "The impact of restrictive NGO laws" or "The role of technology in human rights advocacy."</i>'
             ]),
             'ar': ''.join([
-                '<b>تحليل بيستل (PESTEL) 🌍</b>\n\n',
-                'يقوم هذا الإطار بتقييم العوامل الخارجية <u>السياسية</u> و<u>الاقتصادية</u> و<u>الاجتماعية</u> و<u>التكنولوجية</u> ',
-                'و<u>البيئية</u> و<u>القانونية</u> التي تؤثر على الأعمال أو المبادرات. أداة أساسية لفهم التأثيرات على المستوى الكلي.\n\n',
-                '<i>يرجى تحديد الصناعة أو بيئة العمل التي تريد تحليلها. على سبيل المثال: "قطاع الطاقة المتجددة".</i>'
+                '<b>تحليل بيستل (PESTEL) لمنظمات المجتمع المدني والنشطاء 🌍⚖️</b>\n\n',
+                'يقوم هذا الإطار بتقييم العوامل الخارجية التي تؤثر على عملك، بما في ذلك:\n',
+                '- <u>السياسية</u>: السياسات الحكومية، حرية التعبير، الفضاء المدني.\n',
+                '- <u>الاقتصادية</u>: توفر التمويل، أولويات المانحين، الاستدامة المالية.\n',
+                '- <u>الاجتماعية</u>: وعي المجتمع، دعم الجمهور، الحركات الاجتماعية.\n',
+                '- <u>التكنولوجية</u>: الأمن الرقمي، النشاط الإلكتروني، الوصول إلى الأدوات.\n',
+                '- <u>البيئية</u>: تحديات المناخ، قضايا الاستدامة، المبادرات الخضراء.\n',
+                '- <u>القانونية</u>: قوانين المنظمات غير الحكومية، أطر حقوق الإنسان، العوائق التنظيمية.\n\n',
+                '<i>يرجى تحديد القضية أو السياق الخاص بتحليلك البيستل. على سبيل المثال: "تأثير القوانين المقيدة للمنظمات غير الحكومية" أو "دور التكنولوجيا في الدفاع عن حقوق الإنسان".</i>'
             ])
         }
     }
@@ -114,5 +126,5 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
         logger.info("User selected PESTEL Analysis")
         return PESTEL_ANALYSIS
     else:
-        logger.warning("Invalid analysis method selected."))
+        logger.warning("Invalid analysis method selected.")
         return ANALYSIS_TOOLS

@@ -67,4 +67,5 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
                  ]
             ], resize_keyboard=True, one_time_keyboard=True)
     )
+    logger.info("Problem tree analysis completed successfully.")
     return FLOW_HANDLER
