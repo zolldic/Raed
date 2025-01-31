@@ -3,13 +3,13 @@
 This module handles the complex flow of user interactions in a Telegram bot.
 
 It defines the `flow_handler` function which processes user messages and directs
-the flow of conversation based on the user's input. The function uses the 
-`telegram` library to interact with the Telegram API and the `logging` library 
+the flow of conversation based on the user's input. The function uses the
+`telegram` library to interact with the Telegram API and the `logging` library
 to log user actions.
 
 Functions:
     flow_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        Handles user messages and directs the flow of conversation based on the 
+        Handles user messages and directs the flow of conversation based on the
         user's input. Returns the next state of the conversation.
 
 Constants:
@@ -22,10 +22,14 @@ Constants:
 """
 
 from telegram import Update
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import (
+    ContextTypes,
+    ConversationHandler)
 from logging import getLogger
-
-from .. import FLOW_HANDLER, CONCEPT_NOTE, FULL_PROPOSAL
+from .. import (
+    FLOW_HANDLER, PESTEL_ANALYSIS,
+    SWOT_ANALYSIS, CONCEPT_NOTE,
+    FULL_PROPOSAL)
 
 logger = getLogger(__name__)
 
@@ -39,9 +43,12 @@ async def flow_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         int: The next state of the conversation based on the user's selection.
             - CONCEPT_NOTE: If the user selects 'Generate Concept Note'.
             - FULL_PROPOSAL: If the user selects 'Generate Full Proposal'.
+            - PESTEL_ANALYSIS: If the user selects 'Generate PESTEL Analysis'.
+            - SWOT_ANALYSIS: If the user selects 'Generate SWOT Analysis'.
             - ConversationHandler.END: If the user selects 'End Conversation'.
             - FLOW_HANDLER: If the user selects an invalid option.
     """
+
     match update.message.text:
         case 'Generate Concept Note':
             logger.info("User selected 'Generate Concept Note'")
@@ -49,6 +56,12 @@ async def flow_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         case 'Generate Full Proposal':
             logger.info("User selected 'Generate Full Proposal'")
             return FULL_PROPOSAL
+        case 'Generate PESTEL Analysis':
+            logger.info("User selected 'Generate PESTEL Analysis'")
+            return PESTEL_ANALYSIS
+        case 'Generate SWOT Analysis':
+            logger.info("User selected 'Generate SWOT Analysis'")
+            return SWOT_ANALYSIS
         case 'End Conversation':
             logger.info("User selected 'End Conversation'")
             return ConversationHandler.END
