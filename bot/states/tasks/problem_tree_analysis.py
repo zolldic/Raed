@@ -8,6 +8,7 @@ Functions:
 
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
 from logging import getLogger
 
 from ...gemini.base import Model
@@ -51,17 +52,17 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data['tree_analysis'] = response
         await update.message.reply_text(
             response,
-            parse_mode='HTML'
+            parse_mode=ParseMode.MARKDOWN_V2
         )
         await update.message.reply_text(
             define_lang(conversation, context.user_data['language_code']),
-            parse_mode='HTML',
+            parse_mode=ParseMode.HTML,
             reply_markup=ReplyKeyboardMarkup(
                 [
                     [
                         'Generate Concept Note',
-                       'Generate Full Proposal',
-                       'End Conversation'
+                        'Generate Full Proposal',
+                        'End Conversation'
                     ]
                 ], resize_keyboard=True, one_time_keyboard=True)
         )
