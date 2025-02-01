@@ -11,9 +11,12 @@ Functions:
     verify_file_format(file_name) -> bool:
         Verifies the format of the uploaded file.
 """
+from telegram import File, Document
+from io import BytesIO
 
 from pypdf import PdfReader
 from docx import Document
+
 import textract
 
 
@@ -66,3 +69,11 @@ def verify_file_format(file_name: str) -> bool:
     """
     allowed_ext: set[str] = {'pdf', 'docx', 'doc'}
     return any(file_name.endswith(ext) for ext in allowed_ext)
+
+
+async def process_documents(file: File, file_name: str) -> str:
+    """ """
+    file_byte = await file.download_as_bytearray()
+    buffer = BytesIO(file_byte)
+    content = extract_text_from_file(buffer, file_name)
+    return content

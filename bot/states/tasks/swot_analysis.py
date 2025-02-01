@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """This module provides functionality for handling SWOT analysis using Telegram bot.
-Functions:
-    swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE):
-        Handles the SWOT analysis process. It verifies the uploaded document, extracts text from it,
-        performs SWOT analysis, and sends the analysis result back to the user.
+
+    Functions:
+        swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            Handles the SWOT analysis process. It verifies the uploaded document, extracts text from it,
+            performs SWOT analysis, and sends the analysis result back to the user.
 """
 from telegram import (
-    Update,
-    Document,
-    ReplyKeyboardMarkup)
+    Update, Document,
+    File, ReplyKeyboardMarkup
+)
 from telegram.ext import ContextTypes
-from io import BytesIO
+
 from logging import getLogger
 from ...gemini.base import Model
-from ... import (
-    SWOT_ANALYSIS, FLOW_HANDLER
-)
 from ...utils.utilties import (
     define_lang,
     verify_file_format,
-    extract_text_from_file
+    process_documents
 )
-
+from ... import (
+    SWOT_ANALYSIS, FLOW_HANDLER
+)
 
 logger = getLogger(__name__)
 
@@ -30,6 +30,7 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
     """Handles the SWOT analysis process for the user.
     This method processes the user's uploaded document, performs a SWOT analysis,
     and responds with the analysis results. It also provides options for further actions.
+
     Args:
         update (Update): The update object that contains information about the incoming update.
         context (ContextTypes.DEFAULT_TYPE): The context object that contains user data and other context-specific information.
@@ -75,8 +76,11 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
     if context.user_data.get('document'):
         response: str = Model.swot_analysis(
             context.user_data.get('document'))
-        context.user_data['swot_analysis'] = response
+        if response == None:
+            logger.warning(f"Error: response is None")
+            return SWOT_ANALYSIS
 
+        context.user_data['swot_analysis'] = response
         await update.message.reply_text(
             response,
             parse_mode='HTML',
@@ -111,11 +115,9 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
             return SWOT_ANALYSIS
 
         try:
-            file = await context.bot.get_file(document.file_id)
-            file_byte = await file.download_as_bytearray()
-            buffer = BytesIO(file_byte)
-            extracted_text = extract_text_from_file(buffer, document.file_name)
+            file: File = await context.bot.get_file(document.file_id)
 
+            extracted_text = process_documents(file, document.file_name)
             context.user_data["document"] = extracted_text
             response: str = Model.swot_analysis(extracted_text)
             context.user_data['swot_analysis'] = response
