@@ -1,19 +1,37 @@
 #!/usr/bin/env python3
-""""""
-from telegram import Update, Document, ReplyKeyboardMarkup
+"""This module provides functionality for handling PESTEL analysis using Telegram bot.
+
+    Functions:
+        pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            Handles the PESTEL analysis process. It verifies the uploaded document, extracts text from it,
+            performs PESTEL analysis, and sends the analysis result back to the user.
+"""
+from telegram import (
+    Update, Document,
+    File, ReplyKeyboardMarkup
+)
 from telegram.ext import ContextTypes
 from logging import getLogger
-from io import BytesIO
-from ...utils.utilties import verify_file_format, define_lang, extract_text_from_file
-from ... import PESTEL_ANALYSIS, FLOW_HANDLER
-
 from ...gemini.base import Model
+from ...utils.utilties import (
+    verify_file_format, define_lang, process_documents
+)
+from ... import PESTEL_ANALYSIS, FLOW_HANDLER
 
 logger = getLogger(__name__)
 
 
 async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """"""
+    """Handles the PESTEL analysis process for the user.
+       This method processes the user's uploaded document, performs a PESTEL analysis,
+       and responds with the analysis results. It also provides options for further actions.
+
+       Args:
+           update (Update): The update object that contains information about the incoming update.
+           context (ContextTypes.DEFAULT_TYPE): The context object that contains user data and other context-specific information.
+       Returns:
+           int: The next state of the conversation flow.
+       """
     conversation: dict[str, str] = {
         'upload_document': {
             'en': ''.join([
@@ -60,8 +78,7 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
             reply_markup=ReplyKeyboardMarkup(
                 [[
                     'Generate SWOT Analysis',
-                    'Generate Full Proposal',
-                    'Generate Concept Note'
+                    'End Conversation',
                 ]],
                 resize_keyboard=True,
                 one_time_keyboard=True
@@ -89,12 +106,9 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
             return PESTEL_ANALYSIS
 
         try:
-            file = await context.bot.get_file(document.file_id)
-            file_byte = await file.download_as_bytearray()
-            buffer = BytesIO(file_byte)
-            extracted_text = extract_text_from_file(buffer, document.file_name)
-
-            context.user_data["files"] = extracted_text
+            file: File = await context.bot.get_file(document.file_id)
+            extracted_text = process_documents(file, document.file_name)
+            context.user_data["document"] = extracted_text
             response: str = Model.pestel_analysis(extracted_text)
             context.user_data['pestel_analysis'] = response
             await update.message.reply_text(
@@ -102,15 +116,16 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
                 parse_mode='HTML',
                 reply_markup=ReplyKeyboardMarkup(
                     [[
-                        'Generate PESTEL Analysis',
-                        'Generate Full Proposal',
-                        'Generate Concept Note'
+                        'Generate SWOT Analysis',
+                        'End Conversation',
+
                     ]],
                     resize_keyboard=True,
                     one_time_keyboard=True
                 )
             )
-            logger.info("PESTEL analysis completed and response sent to user.")
+            logger.info(
+                "PESTEL analysis completed and response sent to user.")
             return FLOW_HANDLER
         except Exception as e:
             text = define_lang(
@@ -121,5 +136,6 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
                 parse_mode='HTML'
             )
 
-            logger.error(f"File upload error: {e}\n return to PESTEL Analysis")
+            logger.error(
+                f"File upload error: {e}\n return to PESTEL Analysis")
             return PESTEL_ANALYSIS

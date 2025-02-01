@@ -87,8 +87,7 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
             reply_markup=ReplyKeyboardMarkup(
                 [[
                     'Generate PESTEL Analysis',
-                    'Generate Full Proposal',
-                    'Generate Concept Note'
+                    'End Conversation',
                 ]],
                 resize_keyboard=True,
                 one_time_keyboard=True
@@ -116,7 +115,6 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
 
         try:
             file: File = await context.bot.get_file(document.file_id)
-
             extracted_text = process_documents(file, document.file_name)
             context.user_data["document"] = extracted_text
             response: str = Model.swot_analysis(extracted_text)
@@ -128,8 +126,7 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
                 reply_markup=ReplyKeyboardMarkup(
                     [[
                         'Generate PESTEL Analysis',
-                        'Generate Full Proposal',
-                        'Generate Concept Note'
+                        'End Conversation',
                     ]],
                     resize_keyboard=True,
                     one_time_keyboard=True
