@@ -112,8 +112,8 @@ class Gemini:
         response = self._model.generate_content(prompt)
         return response.text
 
-    def generate_concept_note(self, user_input: str, profile: str) -> str:
-        """Generates a concept note based on the user's input and profile data.
+    def generate_full_proposal(self, user_input: str, profile: str) -> str:
+        """Generates a full proposal based on the user's input and profile data.
 
         Args:
             user_input(str): The user's input for the concept note.
