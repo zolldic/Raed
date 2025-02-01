@@ -67,8 +67,12 @@ class Gemini:
                 "Threats: Government crackdowns, misinformation, shrinking civic space. Highlight Sudan-specific factors (e.g., how currency inflation weakens budgets, or how youth-led protests create opportunities). Propose ways to leverage strengths against threats (e.g., using community radio to counter internet shutdowns). Ask for details if the input lacks focus."
             )
         )
-        response = self._model.generate_content(prompt)
-        return response.text
+        try:
+            response = self._model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
 
     def pestel_analysis(self, user_input: str) -> str:
         """Analyzes the user's challenge through a PESTEL lens, focusing on Sudan’s context.
@@ -91,8 +95,12 @@ class Gemini:
                 f"here is the user's input: ``{user_input}``"
             )
         )
-        response = self._model.generate_content(prompt)
-        return response.text
+        try:
+            response = self._model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
 
     def generate_concept_note(self, user_input: str, profile: str) -> str:
         """Generates a concept note based on the user's input and profile data.
@@ -116,8 +124,12 @@ class Gemini:
                 f"User's profile: ``{profile}``"
             )
         )
-        response = self._model.generate_content(prompt)
-        return response.text
+        try:
+            response = self._model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
 
     def generate_full_proposal(self, user_input: str, profile: str) -> str:
         """Generates a full proposal based on the user's input and profile data.
@@ -145,8 +157,12 @@ class Gemini:
                 f"User's profile: ``{profile}``"
             )
         )
-        response = self._model.generate_content(prompt)
-        return response.text
+        try:
+            response = self._model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
 
 
 Model = Gemini(instruction=system_config)
