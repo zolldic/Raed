@@ -46,7 +46,7 @@ system_config = (
     Cite reputable sources where possible (e.g., UN reports, Sudanese civil society networks) to support your analysis.
     """,
     """Your Response:
-    should be formatted in Markdown only without any special characters or emojis.
+    Should be in Arabi.
+    formatted in plain text only without any special characters or emojis.
     """
-
 )

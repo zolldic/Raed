@@ -63,6 +63,10 @@ async def flow_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
             logger.info("User selected 'Generate SWOT Analysis'")
             return SWOT_ANALYSIS
         case 'End Conversation':
+            await update.message.reply_text(
+                "Thank you for using the bot. Have a great day!",
+                parse_mode='HTML'
+            )
             logger.info("User selected 'End Conversation'")
             return ConversationHandler.END
         case _:

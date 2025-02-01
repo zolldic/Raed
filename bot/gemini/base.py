@@ -36,11 +36,12 @@ class Gemini:
             str: The generated analysis based on the Problem Tree method.
         """
         prompt = ''.join((
-            f"Analyze the user’s described issue: ``{user_input}`` using the Problem Tree method. First, identify the core problem. Then, map its root causes (e.g., political exclusion, resource inequity) and consequences (e.g., displacement, loss of trust in institutions). Structure your answer as:"
+            "Analyze the user’s described issue using the Problem Tree method. First, identify the core problem. Then, map its root causes (e.g., political exclusion, resource inequity) and consequences (e.g., displacement, loss of trust in institutions). Structure your answer as:"
             "Trunk(Core Problem): [Concise statement]"
             "Roots(Causes): [Categorize into governance, socioeconomic, or conflict-related factors]"
             "Branches(Effects): [Local, regional, and institutional impacts]"
             "Recommendations: [Actionable steps tailored to Sudanese civil society’s capacity]."
+            f"Issue: `{user_input}`"
         ))
         try:
             response = self._model.generate_content(prompt)

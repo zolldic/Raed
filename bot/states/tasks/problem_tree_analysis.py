@@ -31,19 +31,25 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         int: The next state in the conversation flow.
     """
     conversation: dict[str, str] = {
-        'en': ''.join([
-            '<b>Based on the analysis provided:</b>\n\n',
-            '1. Generate a concept note 📄\n',
-            '2. Generate a full proposal 📑\n',
-            '3. End the conversation 👋\n\n',
-        ]),
-        'ar': ''.join([
-            '<b>بناءً على التحليل المقدم:</b>\n\n',
-            '1. إنشاء مذكرة مفاهيمية 📄\n',
-            '2. إنشاء مقترح كامل 📑\n',
-            '3. إنهاء المحادثة 👋\n\n',
+        'success': {
+            'en': ''.join([
+                '<b>Based on the analysis provided:</b>\n\n',
+                '1. Generate a concept note 📄\n',
+                '2. Generate a full proposal 📑\n',
+                '3. End the conversation 👋\n\n',
+            ]),
+            'ar': ''.join([
+                '<b>بناءً على التحليل المقدم:</b>\n\n',
+                '1. إنشاء مذكرة مفاهيمية 📄\n',
+                '2. إنشاء مقترح كامل 📑\n',
+                '3. إنهاء المحادثة 👋\n\n',
 
-        ])
+            ]),
+        },
+        'error': {
+            'en': "An error occurred while analyzing your problem. Please re-enter the problem you wish to analyze.",
+            'ar': "حدث خطأ أثناء تحليل مشكلتك. يرجى إعادة إدخال المشكلة التي ترغب في تحليلها.",
+        }
     }
 
     try:
@@ -52,10 +58,11 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         context.user_data['tree_analysis'] = response
         await update.message.reply_text(
             response,
-            parse_mode=ParseMode.MARKDOWN_V2
+            parse_mode=ParseMode.HTML
         )
         await update.message.reply_text(
-            define_lang(conversation, context.user_data['language_code']),
+            define_lang(conversation['success'],
+                        context.user_data['language_code']),
             parse_mode=ParseMode.HTML,
             reply_markup=ReplyKeyboardMarkup(
                 [
@@ -69,5 +76,11 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         logger.info("Problem tree analysis completed successfully.")
         return FLOW_HANDLER
     except Exception as e:
-        logger.error(f"Error generating a response for user: {e}")
+        text: str = define_lang(conversation['error'],
+                                context.user_data['language_code'])
+        await update.message.reply_text(
+            text,
+            parse_mode=ParseMode.HTML
+        )
+        logger.error(f"Error: {e}")
         return PROBLEM_TREE_ANALYSIS
