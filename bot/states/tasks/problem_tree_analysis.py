@@ -4,9 +4,6 @@
 Functions:
     problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Handles the problem tree analysis by receiving user input, performing analysis, and providing options for further actions.
-
-Attributes:
-    logger (Logger): Logger instance for logging information within this module.
 """
 
 from telegram import Update, ReplyKeyboardMarkup
@@ -15,7 +12,7 @@ from logging import getLogger
 
 from ...gemini.base import Model
 from ...utils.utilties import define_lang
-from ... import FLOW_HANDLER
+from ... import FLOW_HANDLER, PROBLEM_TREE_ANALYSIS
 
 logger = getLogger(__name__)
 
@@ -32,11 +29,6 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
     Returns:
         int: The next state in the conversation flow.
     """
-
-    response: str = Model.problem_tree_analysis(
-        update.message.text)
-
-    context.user_data['tree_analysis'] = response
     conversation: dict[str, str] = {
         'en': ''.join([
             '<b>Based on the analysis provided:</b>\n\n',
@@ -52,20 +44,29 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         ])
     }
-    # send the user the analysis
-    # create a docx file
-    await update.message.reply_text(response, parse_mode='HTML')
 
-    await update.message.reply_text(
-        define_lang(conversation, context.user_data['language_code']),
-        parse_mode='HTML',
-        reply_markup=ReplyKeyboardMarkup(
-            [
-                ['Generate Concept Note',
-                 'Generate Full Proposal',
-                 'End Conversation'
-                 ]
-            ], resize_keyboard=True, one_time_keyboard=True)
-    )
-    logger.info("Problem tree analysis completed successfully.")
-    return FLOW_HANDLER
+    try:
+        response: str = Model.problem_tree_analysis(
+            update.message.text)
+        context.user_data['tree_analysis'] = response
+        await update.message.reply_text(
+            response,
+            parse_mode='HTML'
+        )
+        await update.message.reply_text(
+            define_lang(conversation, context.user_data['language_code']),
+            parse_mode='HTML',
+            reply_markup=ReplyKeyboardMarkup(
+                [
+                    [
+                        'Generate Concept Note',
+                       'Generate Full Proposal',
+                       'End Conversation'
+                    ]
+                ], resize_keyboard=True, one_time_keyboard=True)
+        )
+        logger.info("Problem tree analysis completed successfully.")
+        return FLOW_HANDLER
+    except Exception as e:
+        logger.error(f"Error generating a response for user: {e}")
+        return PROBLEM_TREE_ANALYSIS

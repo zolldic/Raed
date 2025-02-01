@@ -2,8 +2,11 @@
 """This module provides the Gemini class for interacting with the Gemini generative AI model.
 """
 import google.generativeai as genai
+from logging import getLogger
 from ..config import GEMINI_KEY
 from ..config import system_config
+
+logger = getLogger(__name__)
 
 
 class Gemini:
@@ -39,8 +42,12 @@ class Gemini:
             "Branches(Effects): [Local, regional, and institutional impacts]"
             "Recommendations: [Actionable steps tailored to Sudanese civil society’s capacity]."
         ))
-        response = self._model.generate_content(prompt)
-        return response.text
+        try:
+            response = self._model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            logger.error(f"Error: {e}")
+            return None
 
     def swot_analysis(self, user_input: str) -> str:
         """Conducts a SWOT analysis on the user's input. Identifies strengths, weaknesses, opportunities,
