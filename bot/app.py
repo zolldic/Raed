@@ -37,7 +37,8 @@ from .states.analysis_tools import choose_analysis_method
 from .states.tasks.problem_tree_analysis import problem_tree_method
 from .states.tasks.swot_analysis import swot_analysis_method
 from .states.tasks.pestel_analysis import pestel_analysis_method
-
+from .states.tasks.concept_note import handle_concept_note
+from .states.tasks.full_proposal import handle_full_roposal
 # fallback
 from .states.fallbacks import cancel
 
@@ -70,8 +71,16 @@ def main():
                 swot_analysis_method
             )],
             PESTEL_ANALYSIS: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
+                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
                 pestel_analysis_method
+            )],
+            CONCEPT_NOTE: [MessageHandler(
+                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                handle_concept_note
+            )],
+            FULL_PROPOSAL: [MessageHandler(
+                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                handle_concept_note
             )],
             FLOW_HANDLER: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),

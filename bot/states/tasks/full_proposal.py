@@ -8,16 +8,17 @@ Functions:
 """
 
 
-from telegram import Update
-from telegram.ext import ContextTypes
+from telegram import Update, Document
+from telegram.ext import ContextTypes, ConversationHandler
 from logging import getLogger
-from ...utils.gemini import generate_full_proposal
-from ... import CHOOSE_TASK
-
+from ...gemini.base import Model
+from ...utils.utilties import define_lang, verify_file_format, extract_text_from_file
+from ... import FULL_PROPOSAL
+from io import BytesIO
 logger = getLogger(__name__)
 
 
-async def write_proposal_task(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def handle_full_roposal(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Asynchronously handles the task of writing a full proposal based on user input and profile data.
 
@@ -29,13 +30,90 @@ async def write_proposal_task(update: Update, context: ContextTypes.DEFAULT_TYPE
         int: return to CHOOSE_TASK conversation state
     """
 
-    text: str = update.message.text
-    profile = context.user_data["profile"]
+    conversation: dict[str, str] = {
+        'upload_document': {
+            'en': ''.join([
+                '<b>📤 Upload Your Organization Profile for Analysis</b>\n\n',
+                'To provide a thorough understanding of your organization, please upload your organization profile. ',
+                'This profile will help in evaluating the organization’s structure, mission, and key functions.\n\n',
+                '<i>Accepted formats: PDF, DOCX, or DOC. Please upload your organization profile now.</i>'
+            ]),
+            'ar': ''.join([
+                '<b>📤 تحميل ملف تعريف منظمتك للتحليل</b>\n\n',
+                'لتوفير فهم شامل لمنظمتك، يرجى تحميل ملف تعريف منظمتك. ',
+                'سيساعد هذا الملف في تقييم هيكل المنظمة، رسالتها، والوظائف الرئيسية.\n\n',
+                '<i>الصيغ المقبولة: PDF، DOCX، أو DOC. يرجى تحميل ملف تعريف منظمتك الآن.</i>'
+            ])
+        },
+        'upload_error': {
+            'en': ''.join([
+                '⚠️ <b>Error Uploading Document</b>\n\n',
+                'There was an issue processing your document. Please ensure that:\n',
+                '✔️ The file format is PDF, DOCX, or DOC.\n',
+                '✔️ The document is not empty or corrupted.\n\n',
+                '🔄 <b>Please try uploading the document again.</b>'
+            ]),
+            'ar': ''.join([
+                '⚠️ <b>خطأ في تحميل المستند</b>\n\n',
+                'حدثت مشكلة أثناء معالجة المستند. يرجى التأكد من:\n',
+                '✔️ أن يكون الملف بصيغة PDF أو DOCX أو DOC.\n',
+                '✔️ أن المستند ليس فارغًا أو تالفًا.\n\n',
+                '🔄 <b>يرجى محاولة تحميل المستند مرة أخرى.</b>'
+            ])
+        }
+    }
 
-    response = generate_full_proposal(text, profile)
-    await update.message.reply_text(
-        response,
-        parse_mode='HTML'
-    )
-    logger.info("Full proposal generated for user")
-    return CHOOSE_TASK
+    if context.user_data["profile"]:
+        text: str = update.message.text
+        response = Model.generate_full_proposal(
+            text, context.user_data["profile"])
+        await update.message.reply_text(
+            response,
+            parse_mode='HTML',
+        )
+        logger.info("full proposal generated for user")
+        return ConversationHandler.END
+
+    context.bot.send_message(define_lang(
+        conversation['upload_document']), parse_mode='HTML')
+
+    document: Document = update.message.document
+
+    if document:
+        if not verify_file_format(document.file_name):
+            error: str = define_lang(
+                conversation['upload_error'], context.user_data['language_code']
+            )
+            await update.message.reply_text(
+                error,
+                parse_mode='HTML'
+            )
+            logger.warning(
+                f"Invalid file format uploaded by user: {document.file_name}.")
+            return FULL_PROPOSAL
+
+        try:
+            file = await context.bot.get_file(document.file_id)
+            file_byte = await file.download_as_bytearray()
+            buffer = BytesIO(file_byte)
+            extracted_text = extract_text_from_file(buffer, document.file_name)
+
+            context.user_data["profile"] = extracted_text
+            response: str = Model.swot_analysis(extracted_text)
+            context.user_data['full_proposal'] = response
+
+            await update.message.reply_text(
+                response,
+                parse_mode='HTML',
+            )
+            logger.info("full proposal generated for user")
+            return ConversationHandler.END
+        except Exception as e:
+            await update.message.reply_text(
+                define_lang(
+                    conversation['upload_error'], context.user_data['language_code']
+                ),
+                parse_mode='HTML'
+            )
+            logger.error(f"File upload error: {e}\n return to Full Proposal")
+            return FULL_PROPOSAL

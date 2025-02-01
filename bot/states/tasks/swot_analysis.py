@@ -12,7 +12,7 @@ from telegram import (
 from telegram.ext import ContextTypes
 from io import BytesIO
 from logging import getLogger
-from ...gemini.analysis import analysis_model
+from ...gemini.base import Model
 from ... import (
     SWOT_ANALYSIS, FLOW_HANDLER
 )
@@ -73,7 +73,7 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
     }
 
     if context.user_data.get('document'):
-        response: str = analysis_model.swot_analysis(
+        response: str = Model.swot_analysis(
             context.user_data.get('document'))
         context.user_data['swot_analysis'] = response
 
@@ -117,7 +117,7 @@ async def swot_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYP
             extracted_text = extract_text_from_file(buffer, document.file_name)
 
             context.user_data["document"] = extracted_text
-            response: str = analysis_model.swot_analysis(extracted_text)
+            response: str = Model.swot_analysis(extracted_text)
             context.user_data['swot_analysis'] = response
 
             await update.message.reply_text(

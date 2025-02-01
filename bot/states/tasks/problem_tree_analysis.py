@@ -13,7 +13,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from logging import getLogger
 
-from ...gemini.analysis import analysis_model
+from ...gemini.base import Model
 from ...utils.utilties import define_lang
 from ... import FLOW_HANDLER
 
@@ -33,7 +33,7 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
         int: The next state in the conversation flow.
     """
 
-    response: str = analysis_model.problem_tree_analysis(
+    response: str = Model.problem_tree_analysis(
         update.message.text)
 
     context.user_data['tree_analysis'] = response

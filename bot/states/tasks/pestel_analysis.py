@@ -7,7 +7,7 @@ from io import BytesIO
 from ...utils.utilties import verify_file_format, define_lang, extract_text_from_file
 from ... import PESTEL_ANALYSIS, FLOW_HANDLER
 
-from ...gemini.analysis import analysis_model
+from ...gemini.base import Model
 
 logger = getLogger(__name__)
 
@@ -50,7 +50,7 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
     }
 
     if context.user_data.get('document'):
-        response: str = analysis_model.swot_analysis(
+        response: str = Model.pestel_analysis(
             context.user_data.get('document'))
         context.user_data['pestel_analysis'] = response
 
@@ -95,7 +95,7 @@ async def pestel_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
             extracted_text = extract_text_from_file(buffer, document.file_name)
 
             context.user_data["files"] = extracted_text
-            response: str = analysis_model.swot_analysis(extracted_text)
+            response: str = Model.pestel_analysis(extracted_text)
             context.user_data['pestel_analysis'] = response
             await update.message.reply_text(
                 response,
