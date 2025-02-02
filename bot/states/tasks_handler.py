@@ -6,9 +6,8 @@ import logging
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from ..utils.utilties import define_lang
-from .. import (USER_CHOICE_HANDLER,
-                ANALYSIS_TOOLS,
-                CONCEPT_NOTE,
+from .. import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
+                ANALYSIS_TOOLS, CONCEPT_NOTE,
                 FULL_PROPOSAL)
 
 logger = logging.getLogger(__name__)
@@ -101,7 +100,7 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     }
 
     if update.message.text not in tasks:
-        update.message.reply_text(
+        await update.message.reply_text(
             define_lang(
                 conversaion['error'],
                 context.user_data['language_code']),
@@ -117,7 +116,7 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         )
         logger.warning(
             f"Invalid task choice: {update.message.text}. Returning to USER_CHOICE_HANDLER state.")
-        return USER_CHOICE_HANDLER
+        return CONVERSATION_HANDLER
 
     context.user_data['task'] = update.message.text
 

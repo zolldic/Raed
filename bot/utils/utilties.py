@@ -10,6 +10,9 @@ Functions:
     
     verify_file_format(file_name) -> bool:
         Verifies the format of the uploaded file.
+
+    async def process_documents(file: File, file_name: str) -> str:
+        Process the uploaded file and extract the text content from it.
 """
 from telegram import File, Document
 from io import BytesIO
@@ -72,7 +75,15 @@ def verify_file_format(file_name: str) -> bool:
 
 
 async def process_documents(file: File, file_name: str) -> str:
-    """ """
+    """Process the uploaded file and extract the text content from it.
+
+    Args:
+        file (File): The uploaded file.
+        file_name (str): The name of the uploaded file.
+
+    Returns:
+        str: The text content extracted from the uploaded file
+    """
     file_byte = await file.download_as_bytearray()
     buffer = BytesIO(file_byte)
     content = extract_text_from_file(buffer, file_name)

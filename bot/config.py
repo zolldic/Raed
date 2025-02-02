@@ -48,5 +48,6 @@ system_config = (
     """Your Response:
     Should be in Arabi.
     formatted in plain text only without any special characters or emojis.
+    Dont't ask the user for additional information.
     """
 )

@@ -24,13 +24,12 @@ from .config import BOT_KEY
 from . import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
                ANALYSIS_TOOLS, PROBLEM_TREE_ANALYSIS,
                SWOT_ANALYSIS, PESTEL_ANALYSIS,
-               CONCEPT_NOTE, FULL_PROPOSAL,
-               FLOW_HANDLER)
+               CONCEPT_NOTE, FULL_PROPOSAL
+               )
 
 from .states.start_conversation import start
 from .states.user_choice_handler import user_choice
 from .states.tasks_handler import tasks
-from .states.complex_flow_handler import flow_handler
 
 # analysis tools
 from .states.analysis_tools import choose_analysis_method
@@ -44,7 +43,20 @@ from .states.fallbacks import cancel
 
 
 def main():
-    """
+    """Initializes and runs the bot application.
+    This function sets up the bot application using the ApplicationBuilder with the provided BOT_KEY.
+    It defines a ConversationHandler with various states and corresponding handlers for different
+    user interactions. The conversation states include:
+    - USER_CHOICE_HANDLER: Handles user choices.
+    - CONVERSATION_HANDLER: Handles general tasks.
+    - ANALYSIS_TOOLS: Handles the selection of analysis methods.
+    - PROBLEM_TREE_ANALYSIS: Handles the problem tree analysis method.
+    - SWOT_ANALYSIS: Handles the SWOT analysis method.
+    - PESTEL_ANALYSIS: Handles the PESTEL analysis method.
+    - CONCEPT_NOTE: Handles the concept note document.
+    - FULL_PROPOSAL: Handles the full proposal document.
+
+    The function also sets up a fallback handler for the 'cancel' command and starts the bot's polling process.
     """
 
     application = ApplicationBuilder().token(BOT_KEY).build()
@@ -67,24 +79,20 @@ def main():
                 problem_tree_method
             )],
             SWOT_ANALYSIS: [MessageHandler(
-                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                filters.TEXT & (~filters.COMMAND),
                 swot_analysis_method
             )],
             PESTEL_ANALYSIS: [MessageHandler(
-                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                filters.TEXT & (~filters.COMMAND),
                 pestel_analysis_method
             )],
             CONCEPT_NOTE: [MessageHandler(
-                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
+                filters.Document.ALL & (~filters.COMMAND),
                 handle_concept_note
             )],
             FULL_PROPOSAL: [MessageHandler(
                 filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
                 handle_concept_note
-            )],
-            FLOW_HANDLER: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
-                flow_handler
             )],
         },
         fallbacks=[CommandHandler('cancel', cancel)]

@@ -54,43 +54,51 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
         },
         'swot_analysis': {
             'en': ''.join([
-                '<b>SWOT Analysis for Civil Society Organizations & Activists ✊🔍</b>\n\n',
-                'This tool helps assess the <u>Strengths</u>, <u>Weaknesses</u>, <u>Opportunities</u>, ',
-                'and <u>Threats</u> affecting your organization, campaign, or initiative. It is essential ',
-                'for strategic planning, advocacy efforts, and sustainability.\n\n',
-                '<i>Please describe the focus of your SWOT analysis. For example: "A grassroots campaign for climate justice" or "A human rights NGO working in conflict zones."</i>'
+                '<b>SWOT Analysis 📊</b>\n\n',
+                'This tool evaluates:\n',
+                '- <u>Strengths</u> (internal advantages) 📈\n',
+                '- <u>Weaknesses</u> (internal limitations) 📉\n',
+                '- <u>Opportunities</u> (external positive factors) 🌟\n',
+                '- <u>Threats</u> (external challenges) 🌪️\n\n',
+                '<i>Describe your project/organization/initiative for analysis. ',
+                'Example: "A local NGO promoting digital literacy in rural communities."</i>'
             ]),
             'ar': ''.join([
-                '<b>تحليل سوات (SWOT) لمنظمات المجتمع المدني والنشطاء ✊🔍</b>\n\n',
-                'تساعد هذه الأداة في تقييم <u>نقاط القوة</u> و<u>نقاط الضعف</u> و<u>الفرص</u> ',
-                'و<u>التهديدات</u> التي تؤثر على منظمتك أو حملتك أو مبادرتك. أداة أساسية ',
-                'للتخطيط الاستراتيجي، وجهود المناصرة، وضمان الاستدامة.\n\n',
-                '<i>يرجى تحديد مجال تحليل سوات الخاص بك. على سبيل المثال: "حملة شعبية للعدالة المناخية" أو "منظمة حقوقية تعمل في مناطق النزاع".</i>'
-            ])
+                '<b>تحليل سوات (SWOT) 📊</b>\n\n',
+                'تقيم هذه الأداة:\n',
+                '- <u>النقاط القوة</u> (مزايا داخلية) 📈\n',
+                '- <u>النقاط الضعف</u> (قيود داخلية) 📉\n',
+                '- <u>الفرص</u> (عوامل خارجية إيجابية) 🌟\n',
+                '- <u>التهديدات</u> (تحديات خارجية) 🌪️\n\n',
+                '<i>صف مشروعك/منظمتك/مبادرتك للتحليل. ',
+                'مثال: "منظمة محلية تعمل على تعزيز محو الأمية الرقمية في المجتمعات الريفية."</i>'
+            ]),
         },
         'pestel_analysis': {
             'en': ''.join([
-                '<b>PESTEL Analysis for Civil Society Organizations & Activists 🌍⚖️</b>\n\n',
-                'This framework evaluates external factors influencing your work, including:\n',
-                '- <u>Political</u>: Government policies, freedom of expression, civic space.\n',
-                '- <u>Economic</u>: Funding availability, donor priorities, financial sustainability.\n',
-                '- <u>Social</u>: Public awareness, community support, social movements.\n',
-                '- <u>Technological</u>: Digital security, online activism, access to tools.\n',
-                '- <u>Environmental</u>: Climate challenges, sustainability concerns, green initiatives.\n',
-                '- <u>Legal</u>: Laws on NGOs, human rights frameworks, regulatory barriers.\n\n',
-                '<i>Please specify the issue or context for your PESTEL analysis. For example: "The impact of restrictive NGO laws" or "The role of technology in human rights advocacy."</i>'
+                '<b>PESTEL Analysis 🌐</b>\n\n',
+                'This tool examines external factors affecting your project/organization:\n',
+                '- <u>Political</u> (government policies, regulations) 🏛️\n',
+                '- <u>Economic</u> (economic trends, market conditions) 💹\n',
+                '- <u>Social</u> (cultural trends, demographics) 👥\n',
+                '- <u>Technological</u> (innovations, tech advancements) 🚀\n',
+                '- <u>Environmental</u> (ecological issues, sustainability) 🌍\n',
+                '- <u>Legal</u> (laws, compliance requirements) ⚖️\n\n',
+                '<i>Describe your project/organization/initiative for analysis. ',
+                'Example: "A startup developing renewable energy solutions."</i>'
             ]),
             'ar': ''.join([
-                '<b>تحليل بيستل (PESTEL) لمنظمات المجتمع المدني والنشطاء 🌍⚖️</b>\n\n',
-                'يقوم هذا الإطار بتقييم العوامل الخارجية التي تؤثر على عملك، بما في ذلك:\n',
-                '- <u>السياسية</u>: السياسات الحكومية، حرية التعبير، الفضاء المدني.\n',
-                '- <u>الاقتصادية</u>: توفر التمويل، أولويات المانحين، الاستدامة المالية.\n',
-                '- <u>الاجتماعية</u>: وعي المجتمع، دعم الجمهور، الحركات الاجتماعية.\n',
-                '- <u>التكنولوجية</u>: الأمن الرقمي، النشاط الإلكتروني، الوصول إلى الأدوات.\n',
-                '- <u>البيئية</u>: تحديات المناخ، قضايا الاستدامة، المبادرات الخضراء.\n',
-                '- <u>القانونية</u>: قوانين المنظمات غير الحكومية، أطر حقوق الإنسان، العوائق التنظيمية.\n\n',
-                '<i>يرجى تحديد القضية أو السياق الخاص بتحليلك البيستل. على سبيل المثال: "تأثير القوانين المقيدة للمنظمات غير الحكومية" أو "دور التكنولوجيا في الدفاع عن حقوق الإنسان".</i>'
-            ])
+                '<b>تحليل بيستل (PESTEL) 🌐</b>\n\n',
+                'تدرس هذه الأداة العوامل الخارجية التي تؤثر على مشروعك/منظمتك:\n',
+                '- <u>السياسية</u> (السياسات الحكومية، اللوائح) 🏛️\n',
+                '- <u>الاقتصادية</u> (الاتجاهات الاقتصادية، ظروف السوق) 💹\n',
+                '- <u>الاجتماعية</u> (الاتجاهات الثقافية، التركيبة السكانية) 👥\n',
+                '- <u>التكنولوجية</u> (الابتكارات، التطورات التكنولوجية) 🚀\n',
+                '- <u>البيئية</u> (القضايا البيئية، الاستدامة) 🌍\n',
+                '- <u>القانونية</u> (القوانين، متطلبات الامتثال) ⚖️\n\n',
+                '<i>صف مشروعك/منظمتك/مبادرتك للتحليل. ',
+                'مثال: "شركة ناشئة تعمل على تطوير حلول الطاقة المتجددة."</i>'
+            ]),
         }
     }
 
@@ -126,5 +134,8 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
         logger.info("User selected PESTEL Analysis")
         return PESTEL_ANALYSIS
     else:
+        await update.message.reply_text(
+            "Invalid analysis method selected. Please choose a valid option.",
+            parse_mode='HTML')
         logger.warning("Invalid analysis method selected.")
         return ANALYSIS_TOOLS
