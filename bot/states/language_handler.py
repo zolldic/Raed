@@ -15,7 +15,7 @@ from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 from logging import getLogger
 
-from .. import USER_CHOICE_HANDLER
+from .. import SET_TASKS
 from ..utils.utilties import define_lang
 
 logger = getLogger(__name__)
@@ -81,4 +81,7 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         ),
         parse_mode=ParseMode.HTML
     )
-    return USER_CHOICE_HANDLER
+
+    logger.info(
+        f"User {update.effective_user.id} set their language to {lang}")
+    return SET_TASKS
