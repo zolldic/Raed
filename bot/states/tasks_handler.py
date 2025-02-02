@@ -7,8 +7,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from ..utils.utilties import define_lang
 from .. import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
-                ANALYSIS_TOOLS, CONCEPT_NOTE,
-                FULL_PROPOSAL)
+                ANALYSIS_TOOLS, USER_ROLE)
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +151,7 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             )
             logger.info(
                 "User selected 'Generate Concept Note'. Transitioning to CONCEPT_NOTE state")
-            return CONCEPT_NOTE
+            return USER_ROLE
         case 'Generate Full Proposal':
             await update.message.reply_text(
                 define_lang(
@@ -168,7 +167,7 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             )
             logger.info(
                 "User selected 'Generate Full Proposal'. Transitioning to FULL_PROPOSAL state.")
-            return FULL_PROPOSAL
+            return USER_ROLE
         case _:  # This should never be reached
             logger.error(
                 "Invalid task choice. Returning to USER_CHOICE_HANDLER state.")

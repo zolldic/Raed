@@ -57,57 +57,57 @@ async def handle_concept_note(update: Update, context: ContextTypes.DEFAULT_TYPE
         }
     }
 
-    if context.user_data["profile"]:
-        text: str = update.message.text
-        response = Model.generate_concept_note(
-            text, context.user_data["profile"])
-        await update.message.reply_text(
-            response,
-            parse_mode='HTML',
-        )
-        logger.info("concept note generated for user")
-        return ConversationHandler.END
+    role: str = update.message.text
 
-    context.bot.send_message(define_lang(
-        conversation['upload_document']), parse_mode='HTML')
-
-    document: Document = update.message.document
-
-    if document:
-        if not verify_file_format(document.file_name):
-            error: str = define_lang(
-                conversation['upload_error'], context.user_data['language_code']
-            )
+    match role:
+        case '1':
             await update.message.reply_text(
-                error,
+                "describe your project ",
                 parse_mode='HTML'
             )
-            logger.warning(
-                f"Invalid file format uploaded by user: {document.file_name}.")
-            return CONCEPT_NOTE
-
-        try:
-            file = await context.bot.get_file(document.file_id)
-            file_byte = await file.download_as_bytearray()
-            buffer = BytesIO(file_byte)
-            extracted_text = extract_text_from_file(buffer, document.file_name)
-
-            context.user_data["profile"] = extracted_text
-            response: str = Model.swot_analysis(extracted_text)
-            context.user_data['concept_note'] = response
-
+            print(update.message.text)
+        case '2':
             await update.message.reply_text(
-                response,
-                parse_mode='HTML',
-            )
-            logger.info("concept note generated for user")
-            return ConversationHandler.END
-        except Exception as e:
-            await update.message.reply_text(
-                define_lang(
-                    conversation['upload_error'], context.user_data['language_code']
-                ),
-                parse_mode='HTML'
-            )
-            logger.error(f"File upload error: {e}\n return to Concept Note")
-            return CONCEPT_NOTE
+                define_lang(conversation['upload_document'], context.user_data['language_code']), parse_mode='HTML')
+
+            document: Document = update.message.document
+            if document:
+                if not verify_file_format(document.file_name):
+                    error: str = define_lang(
+                        conversation['upload_error'], context.user_data['language_code']
+                    )
+                await update.message.reply_text(
+                    error,
+                    parse_mode='HTML'
+                )
+                logger.warning(
+                    f"Invalid file format uploaded by user: {document.file_name}.")
+                return CONCEPT_NOTE
+
+            try:
+                file = await context.bot.get_file(document.file_id)
+                file_byte = await file.download_as_bytearray()
+                buffer = BytesIO(file_byte)
+                extracted_text = extract_text_from_file(
+                    buffer, document.file_name)
+
+                context.user_data["profile"] = extracted_text
+                response: str = Model.swot_analysis(extracted_text)
+                context.user_data['concept_note'] = response
+
+                await update.message.reply_text(
+                    response,
+                    parse_mode='HTML',
+                )
+                logger.info("concept note generated for user")
+                return ConversationHandler.END
+            except Exception as e:
+                await update.message.reply_text(
+                    define_lang(
+                        conversation['upload_error'], context.user_data['language_code']
+                    ),
+                    parse_mode='HTML'
+                )
+                logger.error(
+                    f"File upload error: {e}\n return to Concept Note")
+                return CONCEPT_NOTE

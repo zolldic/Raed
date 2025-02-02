@@ -6,14 +6,17 @@ Functions:
         Initiates a conversation with the user, presenting a welcome message and language selection options.
 """
 from telegram import (
-    Update,
-    ReplyKeyboardMarkup,
-    User
+    Update, User,
+    ReplyKeyboardMarkup, InlineKeyboardButton,
+    InlineKeyboardMarkup, CallbackQuery
+
 )
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
+
 from logging import getLogger
 
-from .. import USER_CHOICE_HANDLER
+from .. import SET_LANGUAGE
 from ..utils.utilties import define_lang
 
 logger = getLogger(__name__)
@@ -30,6 +33,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         int: The next state in the conversation, which is SET_LANGUAGE.
     """
 
+    keyboard: list = [
+        [InlineKeyboardButton('English', callback_data='en')],
+        [InlineKeyboardButton('Arabic', callback_data='ar')]
+    ]
+    reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(keyboard)
+
     conversation: dict[str] = {
         'en': ''.join((
             "<b>Welcome to Raed, the Activist Support Bot!</b>\n",
@@ -38,9 +47,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             "\n<b>Available Commands:</b>",
             "\n/start - Begin a conversation with Raed or restart it.",
             "\n/cancel - End the conversation at any time.",
-            "\n/info - Get information about Raed and its features.",
             "\n\n<b>Please confirm your preferred language:</b>",
-            "\nType 'English' to continue in English or 'Arabic' to continue in Arabic."
         )),
 
         'ar': ''.join((
@@ -50,33 +57,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             "\n<b>الأوامر المتاحة:</b>",
             "\n/start - بدء محادثة مع رائد أو إعادة تشغيلها.",
             "\n/cancel - إنهاء المحادثة في أي وقت.",
-            "\n/info - الحصول على معلومات حول رائد وميزاته.",
             "\n\n<b>يرجى تأكيد لغتك المفضلة:</b>",
-            "\nاكتب 'English' للمتابعة باللغة الإنجليزية أو 'Arabic' للمتابعة باللغة العربية."
         ))
     }
 
     user: User = update.effective_user
 
-    context.user_data['id'] = user.id
-    context.user_data['full_name'] = user.full_name
-    context.user_data['username'] = user.username
+    context.user_data.update(
+        {
+            'id': user.id,
+            'full_name': user.full_name,
+            'username': user.username if user.username else None
+        }
+    )
 
     text: str = define_lang(conversation, user.language_code)
 
     await update.message.reply_text(
         text,
-        parse_mode='HTML',
-        reply_markup=ReplyKeyboardMarkup(
-
-            [[
-                'English',
-                'Arabic'
-            ]],
-            one_time_keyboard=True,
-            resize_keyboard=True
-        )
+        parse_mode=ParseMode.HTML,
+        reply_markup=reply_markup,
     )
 
-    logger.info(f"User {user.id} ({user.full_name}) started the conversation.")
-    return USER_CHOICE_HANDLER
+    logger.info(
+        f"User {user.id} ({user.full_name}) started the conversation. Transition to SET_LANGUAGE")
+    return SET_LANGUAGE
