@@ -12,33 +12,35 @@
         and starts polling for messages.
 """
 import logging
+import logging.handlers
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
     MessageHandler,
     filters,
-    ConversationHandler
+    ConversationHandler, CallbackQueryHandler
 )
 
+import os
 from .config import BOT_KEY
-from . import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
+from . import (SET_LANGUAGE, SET_TASKS,
                ANALYSIS_TOOLS, PROBLEM_TREE_ANALYSIS,
                SWOT_ANALYSIS, PESTEL_ANALYSIS,
-               CONCEPT_NOTE, FULL_PROPOSAL
+               CONCEPT_NOTE, SET_PAPER, SET_DOCUMENT
                )
 
-from .states.start_conversation import start
-from .states.user_choice_handler import user_choice
-from .states.tasks_handler import tasks
+from .states.entry_point import start
+from .states.language_handler import set_language
+from .states.tasks_handler import set_tasks
+from .states.analysis_tools import set_analysis_method
+from .states.tools.problem_tree_analysis import problem_tree_method
+from .states.tools.swot_analysis import swot_analysis_method
+from .states.tools.pestel_analysis import pestel_analysis_method
 
-# analysis tools
-from .states.analysis_tools import choose_analysis_method
-from .states.tasks.problem_tree_analysis import problem_tree_method
-from .states.tasks.swot_analysis import swot_analysis_method
-from .states.tasks.pestel_analysis import pestel_analysis_method
-from .states.tasks.concept_note import handle_concept_note
-from .states.tasks.full_proposal import handle_full_roposal
-# fallback
+from .states.papers_handler import generate_papers
+from .states.papers.concept_note_handler import concept_note
+from .states.documents_handler import handle_documents_upload
+
 from .states.fallbacks import cancel
 
 
@@ -46,54 +48,40 @@ def main():
     """Initializes and runs the bot application.
     This function sets up the bot application using the ApplicationBuilder with the provided BOT_KEY.
     It defines a ConversationHandler with various states and corresponding handlers for different
-    user interactions. The conversation states include:
-    - USER_CHOICE_HANDLER: Handles user choices.
-    - CONVERSATION_HANDLER: Handles general tasks.
-    - ANALYSIS_TOOLS: Handles the selection of analysis methods.
-    - PROBLEM_TREE_ANALYSIS: Handles the problem tree analysis method.
-    - SWOT_ANALYSIS: Handles the SWOT analysis method.
-    - PESTEL_ANALYSIS: Handles the PESTEL analysis method.
-    - CONCEPT_NOTE: Handles the concept note document.
-    - FULL_PROPOSAL: Handles the full proposal document.
-
-    The function also sets up a fallback handler for the 'cancel' command and starts the bot's polling process.
+    user interactions.
     """
 
     application = ApplicationBuilder().token(BOT_KEY).build()
     conversation = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
-            USER_CHOICE_HANDLER: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND), user_choice
-            )],
-            CONVERSATION_HANDLER: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
-                tasks
-            )],
-            ANALYSIS_TOOLS: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
-                choose_analysis_method
-            )],
+            SET_LANGUAGE: [CallbackQueryHandler(set_language)],
+            SET_TASKS: [CallbackQueryHandler(set_tasks)],
+            ANALYSIS_TOOLS: [CallbackQueryHandler(set_analysis_method)],
             PROBLEM_TREE_ANALYSIS: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
                 problem_tree_method
             )],
             SWOT_ANALYSIS: [MessageHandler(
-                filters.TEXT & (~filters.COMMAND),
-                swot_analysis_method
-            )],
+                            filters.TEXT & (~filters.COMMAND),
+                            swot_analysis_method
+                            )],
             PESTEL_ANALYSIS: [MessageHandler(
                 filters.TEXT & (~filters.COMMAND),
                 pestel_analysis_method
             )],
+            SET_PAPER: [CallbackQueryHandler(
+                generate_papers
+            )],
             CONCEPT_NOTE: [MessageHandler(
+                filters.TEXT & (~filters.COMMAND),
+                concept_note
+            )],
+            SET_DOCUMENT: [MessageHandler(
                 filters.Document.ALL & (~filters.COMMAND),
-                handle_concept_note
+                handle_documents_upload
             )],
-            FULL_PROPOSAL: [MessageHandler(
-                filters.TEXT & filters.Document.ALL & (~filters.COMMAND),
-                handle_concept_note
-            )],
+            # END: [CallbackQueryHandler(end_conversation)]
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
@@ -102,12 +90,31 @@ def main():
 
 
 if __name__ == '__main__':
+    os.makedirs('logs', exist_ok=True)
+
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # file handler for logs.
+    file_handler = logging.handlers.TimedRotatingFileHandler(
+        filename='logs/bot.log',
+        when='midnight',
+        interval=1,
+        backupCount=7,
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+    file_handler.setLevel(logging.INFO)
+
+    # stream (console) handler for logs.
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    console_handler.setLevel(logging.INFO)
+
     logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         level=logging.INFO,
         handlers=[
-            logging.FileHandler('logs/bot.log'),
-            logging.StreamHandler()
+            file_handler  # , console_handler # for test purposes
         ]
     )
 
