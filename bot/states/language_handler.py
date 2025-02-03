@@ -50,13 +50,11 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                 '<b>What would you like to do next?</b>\n\n',
                 '1. Use analysis tools 🔍\n',
                 '2. Generate a concept note 📄\n',
-                '3. Generate a full proposal 📑\n\n',
             ]),
             'ar': ''.join([
                 '<b>ماذا تريد أن تفعل بعد ذلك؟</b>\n\n',
                 '1. استخدام أدوات التحليل 🔍\n',
                 '2. إنشاء مذكرة مفاهيمية 📄\n',
-                '3. إنشاء مقترح كامل 📑\n\n',
             ])
         }
     }
@@ -75,8 +73,6 @@ async def set_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                     'Use Analysis Tools', callback_data='ANALYSIS_TOOLS')],
                 [InlineKeyboardButton(
                     'Generate A Concept Note', callback_data='CONCEPT_NOTE')],
-                [InlineKeyboardButton(
-                    'Generate A Proposal', callback_data='FULL_PROPOSAL')]
             ]
         ),
         parse_mode=ParseMode.HTML

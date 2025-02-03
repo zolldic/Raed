@@ -10,7 +10,7 @@ from telegram import (
 from telegram.ext import ContextTypes, ConversationHandler
 from telegram.constants import ParseMode
 from ..utils.utilties import define_lang
-from .. import ANALYSIS_TOOLS
+from .. import ANALYSIS_TOOLS, SET_PAPER
 
 logger = logging.getLogger(__name__)
 
@@ -58,13 +58,16 @@ async def set_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 '   - يدرس العوامل السياسية، الاقتصادية، الاجتماعية، التكنولوجية، البيئية، القانونية\n\n',
             ])
         },
+
         'CONCEPT_NOTE': {
+            'en': ''.join([
+                '<b>Would you like to upload a document (e.g., organization profile) to adjust the response?</b>\n',
 
+            ]),
+            'ar': ''.join([
+                '<b>هل ترغب في تحميل مستند (مثل ملف تعريف المنظمة) لتعديل الرد بناءً عليه؟</b>\n',
+            ])
         },
-        'FULL_PROPOSAL': {
-
-        },
-
         'END': {
             'en': 'Thank you for using Raed. Have a great day! 👋',
             'ar': 'شكرًا لاستخدام رائد. أتمنى لك يومًا سعيدًا! 👋'
@@ -99,12 +102,33 @@ async def set_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             ),
             parse_mode=ParseMode.HTML
         )
+        logger.info(
+            f"User {update.effective_user.id} selected Analysis Tools task.")
         return ANALYSIS_TOOLS
     elif task == 'CONCEPT_NOTE':
-        pass
-    elif task == 'FULL_PROPOSAL':
-        pass
+        await context.bot.send_message(
+            text=define_lang(
+                conversaion[task], context.user_data['language_code']
+            ),
+            chat_id=context._chat_id,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            'Yes ✅', callback_data='Yes')
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            'No ❌', callback_data='No')
+                    ],
+                ]
+            ),
+            parse_mode=ParseMode.HTML
+        )
 
+        logger.info(
+            f"User {update.effective_user.id} selected Concept Note task.")
+        return SET_PAPER
     else:
         message: str = define_lang(
             conversaion['END'], context.user_data['language_code'])
@@ -112,5 +136,6 @@ async def set_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             text=message,
             chat_id=context._chat_id,
         )
+
+        logger.info(f"User {update.effective_user.id} selected task: {task}")
         ConversationHandler.END
-    logger.info(f"User {update.effective_user.id} selected task: {task}")
