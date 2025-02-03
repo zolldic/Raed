@@ -78,6 +78,7 @@ async def handle_documents_upload(update: Update, context: ContextTypes.DEFAULT_
             ),
             parse_mode=ParseMode.HTML
         )
+        logger.info(f"Document uploaded successfully: {document.file_name}")
         return CONCEPT_NOTE
     except Exception as e:
         await update.message.reply_text(
