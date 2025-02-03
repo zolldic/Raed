@@ -6,14 +6,14 @@ Functions:
         Handles the problem tree analysis by receiving user input, performing analysis, and providing options for further actions.
 """
 
-from telegram import Update, ReplyKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from telegram.constants import ParseMode
 from logging import getLogger
 
 from ...gemini.base import Model
 from ...utils.utilties import define_lang
-from ... import FLOW_HANDLER, PROBLEM_TREE_ANALYSIS
+from ... import SET_TASKS, PROBLEM_TREE_ANALYSIS
 
 logger = getLogger(__name__)
 
@@ -47,8 +47,8 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
             ]),
         },
         'error': {
-            'en': "An error occurred while analyzing your problem. Please re-enter the problem you wish to analyze.",
-            'ar': "حدث خطأ أثناء تحليل مشكلتك. يرجى إعادة إدخال المشكلة التي ترغب في تحليلها.",
+            'en': 'Please try again. ❌',
+            'ar': 'يرجى المحاولة مرة أخرى ❌'
         }
     }
 
@@ -60,27 +60,23 @@ async def problem_tree_method(update: Update, context: ContextTypes.DEFAULT_TYPE
             response,
             parse_mode=ParseMode.HTML
         )
+
+        success: str = define_lang(conversation['success'],
+                                   context.user_data['language_code'])
         await update.message.reply_text(
-            define_lang(conversation['success'],
-                        context.user_data['language_code']),
+            success,
             parse_mode=ParseMode.HTML,
-            reply_markup=ReplyKeyboardMarkup(
-                [
-                    [
-                        'Generate Concept Note',
-                        'Generate Full Proposal',
-                        'End Conversation'
-                    ]
-                ], resize_keyboard=True, one_time_keyboard=True)
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton('Generate A Concept Note', callback_data='CONCEPT_NOTE')
+                 ],
+                [InlineKeyboardButton('Generate A Proposal', callback_data='FULL_PROPOSAL')
+                 ],
+                [InlineKeyboardButton('End the Conversation', callback_data='END')
+                 ],
+            ]),
         )
         logger.info("Problem tree analysis completed successfully.")
-        return FLOW_HANDLER
+        return SET_TASKS
     except Exception as e:
-        text: str = define_lang(conversation['error'],
-                                context.user_data['language_code'])
-        await update.message.reply_text(
-            text,
-            parse_mode=ParseMode.HTML
-        )
         logger.error(f"Error: {e}")
         return PROBLEM_TREE_ANALYSIS

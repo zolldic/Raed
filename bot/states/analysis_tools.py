@@ -10,19 +10,17 @@ Functions:
         Handles user input to choose an analysis method and responds with
         the corresponding description in the user's preferred language.
 """
-from telegram import Update
+from telegram import Update, CallbackQuery
 from telegram.ext import ContextTypes
+from telegram.constants import ParseMode
 from logging import getLogger
 from ..utils.utilties import define_lang
-from .. import (
-    ANALYSIS_TOOLS, PROBLEM_TREE_ANALYSIS,
-    SWOT_ANALYSIS, PESTEL_ANALYSIS,
-)
+from .. import PROBLEM_TREE_ANALYSIS, SWOT_ANALYSIS, PESTEL_ANALYSIS
 
 logger = getLogger(__name__)
 
 
-async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def set_analysis_method(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the selection of an analysis method and sends the corresponding information to the user.
     This function processes the user's input to determine which analysis method they have chosen.
     It then sends a detailed description of the selected method in the user's preferred language.
@@ -38,7 +36,7 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
     """
 
     conversation: dict[str, str] = {
-        'problem_tree_method': {
+        'PROBLEM_TREE_ANALYSIS': {
             'en': ''.join([
                 '<b>Problem Tree Method 🌳</b>\n\n',
                 'This tool helps visualize the <u>root causes</u> (roots), <u>core problem</u> (trunk), ',
@@ -52,7 +50,7 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
                 '<i>الرجاء وصف المشكلة التي تريد تحليلها. مثال: "نقص المياه النظيفة في المناطق الريفية."</i>'
             ]),
         },
-        'swot_analysis': {
+        'SWOT_ANALYSIS': {
             'en': ''.join([
                 '<b>SWOT Analysis 📊</b>\n\n',
                 'This tool evaluates:\n',
@@ -74,7 +72,7 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
                 'مثال: "منظمة محلية تعمل على تعزيز محو الأمية الرقمية في المجتمعات الريفية."</i>'
             ]),
         },
-        'pestel_analysis': {
+        'PESTEL_ANALYSIS': {
             'en': ''.join([
                 '<b>PESTEL Analysis 🌐</b>\n\n',
                 'This tool examines external factors affecting your project/organization:\n',
@@ -102,40 +100,36 @@ async def choose_analysis_method(update: Update, context: ContextTypes.DEFAULT_T
         }
     }
 
-    method: str = update.message.text
-    if method == '1':
-        await update.message.reply_text(
-            define_lang(conversation['problem_tree_method'],
-                        context.user_data['language_code']
-                        ),
-            parse_mode='HTML'
+    query: CallbackQuery = update.callback_query
+    await query.answer()
+
+    method: str = query.data
+
+    if method == 'PROBLEM_TREE_ANALYSIS':
+        await context.bot.send_message(
+            text=define_lang(conversation[method],
+                             context.user_data['language_code']),
+            chat_id=context._chat_id,
+            parse_mode=ParseMode.HTML
         )
 
-        logger.info("User selected Problem Tree Method")
+        logger.info(f"User selected analysis method: {method}")
         return PROBLEM_TREE_ANALYSIS
-    elif method == '2':
-        await update.message.reply_text(
-            define_lang(conversation['swot_analysis'],
-                        context.user_data['language_code']
-                        ),
-            parse_mode='HTML'
+    elif method == 'SWOT_ANALYSIS':
+        await context.bot.send_message(
+            text=define_lang(conversation[method],
+                             context.user_data['language_code']),
+            chat_id=context._chat_id,
+            parse_mode=ParseMode.HTML
         )
-
-        logger.info("User selected SWOT Analysis")
+        logger.info(f"User selected analysis method: {method}")
         return SWOT_ANALYSIS
-    elif method == '3':
-        await update.message.reply_text(
-            define_lang(conversation['pestel_analysis'],
-                        context.user_data['language_code']
-                        ),
-            parse_mode='HTML'
+    elif method == 'PESTEL_ANALYSIS':
+        await context.bot.send_message(
+            text=define_lang(conversation[method],
+                             context.user_data['language_code']),
+            chat_id=context._chat_id,
+            parse_mode=ParseMode.HTML
         )
-
-        logger.info("User selected PESTEL Analysis")
+        logger.info(f"User selected analysis method: {method}")
         return PESTEL_ANALYSIS
-    else:
-        await update.message.reply_text(
-            "Invalid analysis method selected. Please choose a valid option.",
-            parse_mode='HTML')
-        logger.warning("Invalid analysis method selected.")
-        return ANALYSIS_TOOLS

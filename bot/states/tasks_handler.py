@@ -3,19 +3,21 @@
 """
 
 import logging
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ContextTypes
+from telegram import (
+    Update, CallbackQuery,
+    InlineKeyboardButton, InlineKeyboardMarkup
+)
+from telegram.ext import ContextTypes, ConversationHandler
+from telegram.constants import ParseMode
 from ..utils.utilties import define_lang
-from .. import (USER_CHOICE_HANDLER, CONVERSATION_HANDLER,
-                ANALYSIS_TOOLS, USER_ROLE)
+from .. import ANALYSIS_TOOLS
 
 logger = logging.getLogger(__name__)
 
 
-async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def set_tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """This function processes the user's message to determine the selected task. It validates the task choice
-    and transitions to the corresponding state. If the task choice is invalid, it sends an error message and
-    returns to the user choice handler state.
+    and transitions to the corresponding state.
 
     Args:
         update (telegram.Update): The update object that contains the user's message.
@@ -24,8 +26,17 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     Returns:
         int: The next state to transition to based on the user's task selection.
     """
-    conversaion: dict[str] = {
-        'analysis_tools': {
+
+    query: CallbackQuery = update.callback_query
+    await query.answer()
+    task: str = query.data
+
+    conversaion: dict[str, str] = {
+        'query': {
+            'en': f'Your task has been set to: {task.replace("_", " ").lower()}. ✅',
+            'ar': f'تم تعيين المهمة إلى: {task.replace("_", " ").lower()}. ✅'
+        },
+        'ANALYSIS_TOOLS': {
             'en': ''.join([
                 '<b>Analysis Tools Overview 🔍</b>\n\n',
                 'Please choose an analysis method:\n\n',
@@ -35,7 +46,6 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 '   - Evaluates Strengths, Weaknesses, Opportunities, Threats\n\n',
                 '3. <u>PESTEL Analysis</u> 🌐\n',
                 '   - Examines Political, Economic, Social, Technological, Environmental, Legal factors\n\n',
-                '<i>Type the number of your preferred method.</i>'
             ]),
             'ar': ''.join([
                 '<b>نظرة عامة على أدوات التحليل 🔍</b>\n\n',
@@ -46,129 +56,61 @@ async def tasks(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 '   - يقيم النقاط القوة، الضعف، الفرص، التهديدات\n\n',
                 '3. <u>تحليل بيستل (PESTEL)</u> 🌐\n',
                 '   - يدرس العوامل السياسية، الاقتصادية، الاجتماعية، التكنولوجية، البيئية، القانونية\n\n',
-                '<i>اكتب رقم الأداة التي تفضلها.</i>'
             ])
         },
-        'concept_note': {
-            'en': ''.join([
-                '<b>Concept Note 📄</b>\n\n'
-                'A concise document summarizing a project\'s purpose, objectives, and expected impact. '
-                'Used to pitch ideas to stakeholders or funders.\n\n'
-                '<b>Are you an individual activist or representing an organization?</b>\n\n'
-                '1. Individual Activist 👤\n'
-                '2. Organization 🏢\n\n'
-                '<i>Type the number of your role.</i>'
-            ]),
-            'ar': ''.join([
-                '<b>مذكرة مفاهيمية 📄</b>\n\n'
-                'مذكرة موجزة تُلخص الغرض، الأهداف، والأثر المتوقع للمشروع. تُستخدم لعرض الأفكار على أصحاب المصلحة أو الممولين.\n\n'
-                '<b>هل أنت ناشط فردي أم تمثل منظمة؟</b>\n\n'
-                '1. ناشط فردي 👤\n'
-                '2. منظمة 🏢\n\n'
-                '<i>اكتب رقم الدور الخاص بك.</i>'])
-        },
-        'full_proposal': {
-            'en': ''.join(['<b>Full Proposal 📑</b>\n\n'
-                           'A comprehensive document detailing project methodology, budget, timeline, and implementation plan. '
-                           'Required for formal funding applications.\n\n'
-                           '<b>Are you an individual activist or representing an organization?</b>\n\n'
-                           '1. Individual Activist 👤\n'
-                           '2. Organization 🏢\n\n'
-                           '<i>Type the number of your role.</i>'
-                           ]),
+        'CONCEPT_NOTE': {
 
-            'ar': ''.join([
-                '<b>مقترح كامل 📑</b>\n\n'
-                'وثيقة تفصيلية تشمل منهجية المشروع، الميزانية، الجدول الزمني، وخطة التنفيذ. مطلوبة لطلبات التمويل الرسمية.\n\n'
-                '<b>هل أنت ناشط فردي أم تمثل منظمة؟</b>\n\n'
-                '1. ناشط فردي 👤\n'
-                '2. منظمة 🏢\n\n'
-                '<i>اكتب رقم الدور الخاص بك.</i>'
-            ])
         },
-        'error': {
-            'en': '<b>Invalid task choice. Please select a valid task.</b>',
-            'ar': '< b > اختيار مهمة غير صالح. الرجاء اختيار مهمة صالحة. < /b'
+        'FULL_PROPOSAL': {
+
+        },
+
+        'END': {
+            'en': 'Thank you for using Raed. Have a great day! 👋',
+            'ar': 'شكرًا لاستخدام رائد. أتمنى لك يومًا سعيدًا! 👋'
+
         }
     }
 
-    tasks: set = {
-        'Analysis Tools',
-        'Generate Concept Note',
-        'Generate Full Proposal'
-    }
-
-    if update.message.text not in tasks:
-        await update.message.reply_text(
-            define_lang(
-                conversaion['error'],
-                context.user_data['language_code']),
-            parse_mode='HTML',
-            reply_markup=ReplyKeyboardMarkup(
-                [[
-                    'Analysis Tools',
-                    'Generate Concept Note',
-                    'Generate Full Proposal'
-                ]],
-                one_time_keyboard=True,
-                resize_keyboard=True)
+    await query.edit_message_text(
+        define_lang(conversaion['query'], context.user_data['language_code'])
+    )
+    if task == 'ANALYSIS_TOOLS':
+        await context.bot.send_message(
+            text=define_lang(
+                conversaion[task], context.user_data['language_code']
+            ),
+            chat_id=context._chat_id,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton(
+                            'Problem Tree Method', callback_data='PROBLEM_TREE_ANALYSIS')
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            'SWOT Analysis', callback_data='SWOT_ANALYSIS')
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            'PESTEL Analysis', callback_data='PESTEL_ANALYSIS')
+                    ]
+                ]
+            ),
+            parse_mode=ParseMode.HTML
         )
-        logger.warning(
-            f"Invalid task choice: {update.message.text}. Returning to USER_CHOICE_HANDLER state.")
-        return CONVERSATION_HANDLER
+        return ANALYSIS_TOOLS
+    elif task == 'CONCEPT_NOTE':
+        pass
+    elif task == 'FULL_PROPOSAL':
+        pass
 
-    context.user_data['task'] = update.message.text
-
-    match context.user_data['task']:
-        case 'Analysis Tools':
-            await update.message.reply_text(
-                define_lang(
-                    conversaion['analysis_tools'],
-                    context.user_data['language_code']),
-                parse_mode='HTML',
-                reply_markup=ReplyKeyboardMarkup(
-                    [
-                        ['1', '2', '3']
-                    ],
-                    one_time_keyboard=True,
-                    resize_keyboard=True)
-            )
-            logger.info(
-                "User selected 'Analysis Tools'. Transitioning to ANALYSIS_TOOLS state.")
-            return ANALYSIS_TOOLS
-        case 'Generate Concept Note':
-            await update.message.reply_text(
-                define_lang(conversaion['concept_note'],
-                            context.user_data['language_code']),
-                parse_mode='HTML',
-                reply_markup=ReplyKeyboardMarkup(
-                    [
-                        ['1', '2']
-                    ],
-                    one_time_keyboard=True,
-                    resize_keyboard=True)
-
-            )
-            logger.info(
-                "User selected 'Generate Concept Note'. Transitioning to CONCEPT_NOTE state")
-            return USER_ROLE
-        case 'Generate Full Proposal':
-            await update.message.reply_text(
-                define_lang(
-                    conversaion['full_proposal'],
-                    context.user_data['language_code']),
-                parse_mode='HTML',
-                reply_markup=ReplyKeyboardMarkup(
-                    [
-                        ['1', '2']
-                    ],
-                    one_time_keyboard=True,
-                    resize_keyboard=True)
-            )
-            logger.info(
-                "User selected 'Generate Full Proposal'. Transitioning to FULL_PROPOSAL state.")
-            return USER_ROLE
-        case _:  # This should never be reached
-            logger.error(
-                "Invalid task choice. Returning to USER_CHOICE_HANDLER state.")
-            return USER_CHOICE_HANDLER
+    else:
+        message: str = define_lang(
+            conversaion['END'], context.user_data['language_code'])
+        await context.bot.send_message(
+            text=message,
+            chat_id=context._chat_id,
+        )
+        ConversationHandler.END
+    logger.info(f"User {update.effective_user.id} selected task: {task}")
