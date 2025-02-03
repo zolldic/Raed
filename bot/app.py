@@ -117,5 +117,6 @@ if __name__ == '__main__':
             file_handler  # , console_handler # for test purposes
         ]
     )
-
+    # reduce httpx
+    logging.getLogger('httpx').setLevel(logging.WARNING)
     main()
