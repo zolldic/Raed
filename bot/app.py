@@ -11,9 +11,15 @@
         main(): Initializes the bot application, sets up handlers,
         and starts polling for messages.
 """
+import asyncio
 import logging
 import logging.handlers
+from signal import SIGINT, SIGTERM
+import os
+import sys
+from telegram.error import Conflict
 from telegram.ext import (
+    Application,
     ApplicationBuilder,
     CommandHandler,
     MessageHandler,
@@ -21,7 +27,7 @@ from telegram.ext import (
     ConversationHandler, CallbackQueryHandler
 )
 
-import os
+
 from .config import BOT_KEY
 from . import (SET_LANGUAGE, SET_TASKS,
                ANALYSIS_TOOLS, PROBLEM_TREE_ANALYSIS,
@@ -44,15 +50,78 @@ from .states.documents_handler import handle_documents_upload
 from .states.fallbacks import cancel
 
 
-def main():
-    """Initializes and runs the bot application.
-    This function sets up the bot application using the ApplicationBuilder with the provided BOT_KEY.
-    It defines a ConversationHandler with various states and corresponding handlers for different
-    user interactions.
+async def main():
+    """Main entry point for the bot application.
+        This function initializes the bot application,
+            sets up signal handlers for graceful shutdown,
+            configures logging, and starts the bot either in
+            polling mode (for development) or
+            webhook mode (for production).
     """
 
-    application = ApplicationBuilder().token(BOT_KEY).build()
-    conversation = ConversationHandler(
+    # create the bot application
+    application: Application = ApplicationBuilder().token(BOT_KEY).build()
+
+    # create conversation handler
+    conversation: ConversationHandler = await create_states()
+
+    # add the conversation handler to the bot application
+    application.add_handler(conversation)
+
+    # get the event loop
+    event_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
+
+    # signal handlers for shutdown in case of SIGINT or SIGTERM
+    def signal_handler():
+        event_loop.create_task(shutdown_application(application))
+
+    # add signal handlers for SIGINT and SIGTERM
+    for signal in (SIGINT, SIGTERM):
+        event_loop.add_signal_handler(signal, signal_handler)
+
+    # configure logging for the bot application
+    logging.basicConfig(
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        level=logging.INFO,
+        handlers=[
+            logging.handlers.TimedRotatingFileHandler(
+                filename='logs/bot.log',
+                when='midnight',
+                interval=1,
+                backupCount=5,
+                encoding='utf-8'
+            ),
+            # logging.StreamHandler() # for debugging
+        ]
+    )
+
+    # set the log level for the httpx library to WARNING
+    logging.getLogger('httpx').setLevel(logging.WARNING)
+
+    # start the bot application
+    async with application:
+        await application.start()
+        try:
+            await application.updater.start_polling()  # for development
+        except Conflict as e:
+            logging.error(f"Error starting the bot: {e}")
+            sys.exit(1)
+        # await application.run_webhook(
+        # listen='0.0.0.0',
+        # port=8443,
+        # url_path=f"https://127.0.0.1/{BOT_KEY}"
+        # ) # for production
+
+        # keep the event loop running
+        while True:
+            await asyncio.sleep(3600)
+
+
+async def create_states():
+    """Creates and returns a conversation handler for the bot application."""
+
+    # create the conversation handler
+    return ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             SET_LANGUAGE: [CallbackQueryHandler(set_language)],
@@ -85,38 +154,47 @@ def main():
         },
         fallbacks=[CommandHandler('cancel', cancel)]
     )
-    application.add_handler(conversation)
-    application.run_polling()
+
+
+async def shutdown_application(app: Application,
+                               event_loop: asyncio.AbstractEventLoop):
+    """This function stops the bot application and closes the event loop.
+
+        Args:
+            application (ApplicationBuilder):
+                The bot application to be stopped.
+            event_loop (asyncio.AbstractEventLoop):
+                The event loop to be closed.
+    """
+
+    # get the logger for the application
+    logger: logging.Logger = logging.getLogger(__name__)
+    logger.info('Shutting down the bot application...')
+
+    # stop the updater and the bot
+    await app.updater.stop()
+    await app.stop()
+    await app.shutdown()
+
+    # fetch all running tasks in the event loop to cancel them
+    tasks = [
+        task for task in asyncio.all_tasks() if
+        task is not asyncio.current_task()
+    ]
+
+    # cancel all tasks in the event loop
+    [task.cancel() for task in tasks]
+
+    # wait for all tasks to be cancelled
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+    # close the event loop
+    event_loop.stop()
 
 
 if __name__ == '__main__':
+    # create logs directory if it doesn't exist
     os.makedirs('logs', exist_ok=True)
 
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-    # file handler for logs.
-    file_handler = logging.handlers.TimedRotatingFileHandler(
-        filename='logs/bot.log',
-        when='midnight',
-        interval=1,
-        backupCount=7,
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(logging.INFO)
-
-    # stream (console) handler for logs.
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    console_handler.setLevel(logging.INFO)
-
-    logging.basicConfig(
-        level=logging.INFO,
-        handlers=[
-            file_handler  # , console_handler # for test purposes
-        ]
-    )
-    # reduce httpx
-    logging.getLogger('httpx').setLevel(logging.WARNING)
-    main()
+    # run the bot application
+    asyncio.run(main(), debug=True)
