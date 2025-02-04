@@ -98,7 +98,7 @@ async def main():
     # set the log level for the httpx library to WARNING
     logging.getLogger('httpx').setLevel(logging.WARNING)
 
-    # start the bot application
+    # start the bot application in polling mode
     async with application:
         await application.start()
         try:
@@ -106,15 +106,23 @@ async def main():
         except Conflict as e:
             logging.error(f"Error starting the bot: {e}")
             sys.exit(1)
+
+        # keep the event loop running
+        while True:
+            await asyncio.sleep(3600)
+
+    # start the bot applicaiton in webhook mode
+    # try:
+    #    await application.initialize()
+    #    await application.start()
         # await application.run_webhook(
         # listen='0.0.0.0',
         # port=8443,
         # url_path=f"https://127.0.0.1/{BOT_KEY}"
         # ) # for production
-
-        # keep the event loop running
-        while True:
-            await asyncio.sleep(3600)
+    # except Exception as e:
+    #    await application.stop()
+    #    await application.shutdown()
 
 
 async def create_states():
